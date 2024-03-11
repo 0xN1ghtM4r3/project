@@ -10,7 +10,6 @@ from datetime import datetime
 import json
 
 #  Select Interface 
-
 class InterfaceManager:
     def __init__(self):
         pass
@@ -34,6 +33,7 @@ class InterfaceManager:
         except (ValueError, IndexError):
             print("Invalid choice. Exiting.")
             sys.exit(1)
+
 # Scan WiFi Networks 
 class WiFiScanner:
     def __init__(self, interface):
@@ -102,4 +102,5 @@ class WiFiScanner:
 # main
 interface_manager = InterfaceManager()
 selected_interface = interface_manager.get_user_input()
-print(f"Selected interface: {selected_interface}")
+wifi_scanner = WiFiScanner(selected_interface)
+wifi_scanner.display()
