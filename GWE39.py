@@ -10,6 +10,50 @@ import ipaddress
 from datetime import datetime
 import json
 
+# Authentication
+class UserManagement:
+    def __init__(self):
+        self.users = self.load_users()
+
+    def hash_password(self, password):
+        return hashlib.sha256(password.encode()).hexdigest()
+
+    def load_users(self):
+        try:
+            with open("users.json", "r") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {}
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON data in users.json file.")
+            return {}
+
+    def save_users(self):
+        with open("users.json", "w") as file:
+            json.dump(self.users, file)
+
+    def login(self):
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+        hashed_password = self.hash_password(password)
+        if username in self.users and self.users[username]["password"] == hashed_password:
+            print("Login successful!")
+            return True
+        else:
+            print("Invalid username or password.")
+            return False
+
+    def create_user(self):
+        username = input("Enter new username: ")
+        if username in self.users:
+            print("Username already exists.")
+            return
+        password = input("Enter new password: ")
+        hashed_password = self.hash_password(password)
+        self.users[username] = {"password": hashed_password}
+        self.save_users()
+        print("User created successfully.")
+
 #  Select Interface 
 class InterfaceManager:
     def __init__(self):
@@ -170,6 +214,7 @@ class WiFi_toolkit:
             device_info = {"mac": res[1].hwsrc, "ip": res[1].psrc, "name": self.get_device_name(res[1].psrc)}
             devices.append(device_info)
         return devices
+    
     def get_device_name(self,ip_address):
         try:
             # Attempt to resolve the device name using NetBIOS queries
@@ -177,6 +222,24 @@ class WiFi_toolkit:
             return hostname.split(".")[0]  # Use only the hostname part
         except (socket.herror, socket.gaierror):
             return ""  # Return an empty string if unable to resolve the device name
+        
+    def select_target_device(self, cidr):
+        devices = self.get_devices(cidr)
+        
+        print("Available devices:")
+        for i, device in enumerate(devices):
+            print(f"{i + 1}. {device['name']} ({device['ip']})")
+        
+        while True:
+            try:
+                choice = int(input("Enter the index of the device you want to select as target: "))
+                if 1 <= choice <= len(devices):
+                    selected_device = devices[choice - 1]
+                    return selected_device['ip']
+                else:
+                    print("Invalid choice. Please enter a valid index.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
 
 # Select Drone
 
@@ -199,9 +262,6 @@ interface_manager = InterfaceManager()
 selected_interface = interface_manager.get_user_input()
 wifi_scanner = WiFi_toolkit(selected_interface)
 x= wifi_scanner.extract_subnet(selected_interface)
-
-y = wifi_scanner.get_devices(x)
-
-print("{:<20} {:<15} {:<20}".format("MAC Address", "IP Address", "Device Name"))
-for device in y:
-   print("{:<20} {:<15} {:<20}".format(device["mac"], device["ip"], device["name"]))
+print(x)
+drone_ip=wifi_scanner.select_target_device(x)
+print(drone_ip)
