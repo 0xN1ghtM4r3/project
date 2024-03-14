@@ -241,8 +241,6 @@ class WiFi_toolkit:
             except ValueError:
                 print("Invalid input. Please enter a number.")
 
-# Select Drone
-
 # Scan Ports
 
 # Drone Password Brute Force
