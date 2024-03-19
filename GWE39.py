@@ -9,6 +9,8 @@ from scapy.all import *
 import ipaddress
 from datetime import datetime
 import json
+from concurrent.futures import ThreadPoolExecutor
+
 
 # Authentication
 class UserManagement:
@@ -241,9 +243,31 @@ class WiFi_toolkit:
             except ValueError:
                 print("Invalid input. Please enter a number.")
 
-# Scan Ports
+    def scan_ports(host):
+        def scan_port(port):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(1)  # Adjust timeout as needed
+                    s.connect((host, port))
+                    service = socket.getservbyport(port)
+                    print(f"Port {port} open: {service}")
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_version:
+                            s_version.settimeout(1)  # Adjust timeout as needed
+                            s_version.connect((host, port))
+                            s_version.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                            banner = s_version.recv(1024).decode("utf-8")
+                            print(f"Version: {banner.strip()}")
+                    except socket.error:
+                        pass
+            except socket.error:
+                pass
 
-# Drone Password Brute Force
+        print(f"Scanning host: {host}")
+        with ThreadPoolExecutor(max_workers=50) as executor:
+            for port in range(1, 1001):  # Scan common ports
+                executor.submit(scan_port, port)
+
 
 # ARP Spoofing & Vidieo Intercepting
 
