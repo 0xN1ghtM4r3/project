@@ -196,8 +196,6 @@ class WiFi_toolkit:
 
         return cidr
 
-
-    
     def get_devices(self,cidr):
         """Get a list of devices connected to the local network using ARP requests."""
         # Create an ARP request packet
@@ -262,12 +260,11 @@ class WiFi_toolkit:
                         pass
             except socket.error:
                 pass
-
+            
         print(f"Scanning host: {host}")
         with ThreadPoolExecutor(max_workers=50) as executor:
             for port in range(1, 1001):  # Scan common ports
                 executor.submit(scan_port, port)
-
 
 # ARP Spoofing & Vidieo Intercepting
 
