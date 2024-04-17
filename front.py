@@ -59,6 +59,56 @@ def save_users(users):
         with open("users.json", "w") as file:
             json.dump(users, file)
 
+def networks_list():
+        nertworks = scan()
+        return nertworks
+def scan():
+        try:
+            output = subprocess.check_output("iwlist wlan0 scan", shell=True).decode()
+        except subprocess.CalledProcessError as e:
+            print("Error:", e)
+            return
+        networks = parse_scan_output(output)
+        return networks
+def parse_scan_output(output):
+        networks = []
+        current_network = {}
+        
+        for line in output.split("\n"):
+            if "Cell" in line:
+                if current_network:
+                    networks.append(current_network)
+                current_network = {"ESSID": None, "Channel": None, "Frequency": None, "Quality": None}
+            elif "ESSID:" in line:
+                current_network["ESSID"] = line.split(":")[1].strip().strip('"')
+            elif "Channel:" in line:
+                current_network["Channel"] = line.split(":")[1]
+            elif "Frequency:" in line:
+                frequency_match = re.search(r"(\d+\.\d+) GHz", line)
+                if frequency_match:
+                    current_network["Frequency"] = frequency_match.group(1)
+            elif "Quality=" in line:
+                match = re.search(r"(\d+/\d+)", line)
+                if match:
+                    current_network["Quality"] = match.group(1)
+        
+        if current_network:
+            networks.append(current_network)
+        
+        return [network["ESSID"] for network in networks if network["ESSID"]]
+def connect_to_wifi(wifi_name, password):
+    command = f'nmcli device wifi connect "{wifi_name}" password "{password}"'
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f"Connected to {wifi_name} successfully.")
+    except subprocess.CalledProcessError:
+        print(f"Failed to connect to {wifi_name}.")
+#------------------------------------------------------------
+#------------------------------------------------------------
+#------------------------------------------------------------
+#------------------------------------------------------------
+#------------------------------------------------------------
+#------------------------------------------------------------
 #------------------------------------------------------------
 def Login():
     global frame
@@ -160,7 +210,11 @@ def Reset():
     button3.pack(pady=2, padx=10)
 
 # ********************************************************************************************
-
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
 def Homepage():
     frame.destroy()
     global frame3
@@ -175,32 +229,44 @@ def Homepage():
 
     button2 = customtkinter.CTkButton(master=frame3, text="History", command=test_1)
     button2.pack(pady=12, padx=10)
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
 
 def WifiScan():
     frame3.destroy()
     global frame4
     frame4 = customtkinter.CTkFrame(master=root)
     frame4.pack(pady=20, padx=60, fill="both", expand=True)
+    
 
-    label = customtkinter.CTkLabel(master=frame4, text="Scanning For WiFi Networks...", font=("Roboto", 36), text_color="#329983")
-    label.pack(pady=20, padx=20)
+    selected_network = None
+    def connect():
+        selected_wifi_name = network_combobox.get()  # Get the selected Wi-Fi name
+        if selected_wifi_name:  # Check if a Wi-Fi name is selected
+            password = password_entry.get()
+            connect_to_wifi(selected_wifi_name, password)
+            Scan_Page()
 
-    radio = customtkinter.CTkRadioButton(frame4, text="Wifi 1")
-    radio.pack(pady=(6, 3), padx=50, anchor="w")
-    radio2 = customtkinter.CTkRadioButton(frame4, text="Wifi 2")
-    radio2.pack(pady=(6, 3), padx=50, anchor="w")
-    radio3 = customtkinter.CTkRadioButton(frame4, text="Wifi 3")
-    radio3.pack(pady=(6, 3), padx=50, anchor="w")
-    radio4 = customtkinter.CTkRadioButton(frame4, text="Wifi 4")
-    radio4.pack(pady=(6, 3), padx=50, anchor="w")
+    scan_button = customtkinter.CTkButton(master=frame4, text="Scan", command=networks_list)
+    scan_button.pack(pady=10)
+    network_combobox = customtkinter.CTkComboBox(master=frame4,values=networks_list(), state="readonly")
+    network_combobox.pack(pady=5)
+    password_label = customtkinter.CTkLabel(master=frame4, text="Password:")
+    password_label.pack(pady=5)
+    password_entry = customtkinter.CTkEntry(master=frame4, show="*")
+    password_entry.pack(pady=5)
+    connect_button = customtkinter.CTkButton(master=frame4, text="Connect", command=connect)
+    connect_button.pack(pady=5)
 
-    button3 = customtkinter.CTkButton(master=frame4, text="Select", command=Scan)
-    button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
 
     button4 = customtkinter.CTkButton(master=frame4, text="Back", command=lambda: [des4(), Homepage()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
-def Scan():
+def Scan_Page():
     frame4.destroy()
     global frame5
     frame5 = customtkinter.CTkFrame(master=root)
