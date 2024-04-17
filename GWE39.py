@@ -132,7 +132,6 @@ class WiFi_toolkit:
             quality = network["Quality"] if network["Quality"] is not None else ""
             print("{:<20} {:<10} {:<15} {:<15}".format(essid, channel, frequency, quality))
 
-
     def select_network(self):
         networks = self.scan()
         print("{:<5} {:<20} {:<10} {:<15} {:<15}".format("Index", "ESSID", "Channel", "Frequency", "Quality"))
@@ -529,9 +528,6 @@ class ARPSpoofer:
 
             
 # main  
-drone_spoofing = DroneSpoofing("wlan0")
-drone_spoofing.spoof_packets()
-drone_spoofing.restore_control()
 '''def main():
     user_manager = UserManagement()
     if not user_manager.login():
