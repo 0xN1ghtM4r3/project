@@ -35,10 +35,6 @@ def populate_checkbox(live_hosts):
         var.pack(padx=10, pady=2)
         checkboxes.append((host, var))
 
-def start_scan():
-    # Removed functionality as scan starts automatically
-    pass
-
 def select_device():
     selected_devices = [host for host, var in checkboxes if var.get()]
     selected_device_label.set_textc("Selected device(s): " + ', '.join(selected_devices))
@@ -47,10 +43,8 @@ app = customtkinter.CTk()
 app.geometry("400x300")
 app.title("Network Scanner")
 
-# Removed CIDR entry as it's pre-defined
-
-scan_button = customtkinter.CTkButton(master=app,text="Re-scan", command=start_scan)
-scan_button.pack(padx=10, pady=5)
+scan_label = customtkinter.CTkLabel(master=app,text="Re-scan")
+scan_label.pack(padx=10, pady=5)
 
 checkboxes = []
 
