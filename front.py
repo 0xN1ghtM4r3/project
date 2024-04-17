@@ -1,6 +1,7 @@
 import customtkinter
 from CTkMessagebox import CTkMessagebox
 import tkinter
+import psutil
 import hashlib
 import json
 from scapy.all import *
@@ -40,6 +41,8 @@ def des7():
 
 def des8():
     frame8.destroy()
+def des9():
+    frame9.destroy()
 
 #--------------------------------------------------------------------------
 def hash_password(password):
@@ -64,7 +67,7 @@ def networks_list():
         return nertworks
 def scan():
         try:
-            output = subprocess.check_output("iwlist wlan0 scan", shell=True).decode()
+            output = subprocess.check_output(f"iwlist {selected_interface} scan", shell=True).decode()
         except subprocess.CalledProcessError as e:
             print("Error:", e)
             return
@@ -224,7 +227,7 @@ def Homepage():
     label = customtkinter.CTkLabel(master=frame3, text="Drone Pentesting", font=("Roboto", 46))
     label.pack(pady=(60, 35), padx=10)
 
-    button1 = customtkinter.CTkButton(master=frame3, text="Scan", command=WifiScan)
+    button1 = customtkinter.CTkButton(master=frame3, text="Scan", command=interface_page)
     button1.pack(pady=12, padx=10)
 
     button2 = customtkinter.CTkButton(master=frame3, text="History", command=test_1)
@@ -235,7 +238,40 @@ def Homepage():
 # ********************************************************************************************
 # ********************************************************************************************
 # ********************************************************************************************
+def interface_page():
+    frame3.destroy()
+    global frame4
+    frame4 = customtkinter.CTkFrame(master=root)
+    frame4.pack(pady=20, padx=60, fill="both", expand=True)
+    selected_interface = None
+    def get_network_interfaces():
+        # Get a list of network interfaces
+        interfaces = psutil.net_if_addrs()
+        return list(interfaces.keys())
+    
+    def select_interface():
+        global selected_interface
+        selected_interface = interface_combobox.get()
+        print("Selected Interface:", selected_interface)
+        WifiScan()
 
+    # Create the main application window
+    root.title("Select Network Interface")
+
+    # Get available network interfaces
+    interfaces = get_network_interfaces()
+
+    # Create a label
+    label = customtkinter.CTkLabel(master=frame4, text="Select Network Interface:")
+    label.pack(pady=10)
+
+    # Create a combobox to select the network interface
+    interface_combobox = customtkinter.CTkComboBox(master=frame4, values=interfaces, state="readonly")
+    interface_combobox.pack()
+
+    # Create a button to select the interface
+    select_button = customtkinter.CTkButton(master=frame4, text="Select Interface", command=select_interface)
+    select_button.pack(pady=10)
 # ********************************************************************************************
 # ********************************************************************************************
 # ********************************************************************************************
@@ -243,10 +279,10 @@ def Homepage():
 # ********************************************************************************************
 # ********************************************************************************************
 def WifiScan():
-    frame3.destroy()
-    global frame4
-    frame4 = customtkinter.CTkFrame(master=root)
-    frame4.pack(pady=20, padx=60, fill="both", expand=True)
+    frame4.destroy()
+    global frame5
+    frame5 = customtkinter.CTkFrame(master=root)
+    frame5.pack(pady=20, padx=60, fill="both", expand=True)
     
 
     selected_network = None
@@ -257,104 +293,104 @@ def WifiScan():
             connect_to_wifi(selected_wifi_name, password)
             Scan_Page()
 
-    scan_button = customtkinter.CTkButton(master=frame4, text="Scan", command=networks_list)
+    scan_button = customtkinter.CTkButton(master=frame5, text="Scan", command=networks_list)
     scan_button.pack(pady=10)
-    network_combobox = customtkinter.CTkComboBox(master=frame4,values=networks_list(), state="readonly")
+    network_combobox = customtkinter.CTkComboBox(master=frame5,values=networks_list(), state="readonly")
     network_combobox.pack(pady=5)
-    password_label = customtkinter.CTkLabel(master=frame4, text="Password:")
+    password_label = customtkinter.CTkLabel(master=frame5, text="Password:")
     password_label.pack(pady=5)
-    password_entry = customtkinter.CTkEntry(master=frame4, show="*")
+    password_entry = customtkinter.CTkEntry(master=frame5, show="*")
     password_entry.pack(pady=5)
-    connect_button = customtkinter.CTkButton(master=frame4, text="Connect", command=connect)
+    connect_button = customtkinter.CTkButton(master=frame5, text="Connect", command=connect)
     connect_button.pack(pady=5)
 
 
-    button4 = customtkinter.CTkButton(master=frame4, text="Back", command=lambda: [des4(), Homepage()])
+    button4 = customtkinter.CTkButton(master=frame5, text="Back", command=lambda: [des5(), interface_page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 def Scan_Page():
-    frame4.destroy()
-    global frame5
-    frame5 = customtkinter.CTkFrame(master=root)
-    frame5.pack(pady=20, padx=60, fill="both", expand=True)
-
-    label = customtkinter.CTkLabel(master=frame5, text="Choose Scan method...", font=("Roboto", 36))
-    label.pack(pady=(60, 35), padx=10)
-
-    button1 = customtkinter.CTkButton(master=frame5, text="Full Scan", command=FullScan)
-    button1.pack(pady=12, padx=10)
-
-    button2 = customtkinter.CTkButton(master=frame5, text="Custom Scan", command=test_1)
-    button2.pack(pady=12, padx=10)
-
-    button3 = customtkinter.CTkButton(master=frame5, text="Back", command=lambda: [des5(), WifiScan()], fg_color="transparent")
-    button3.pack(pady=12, padx=10)
-
-def FullScan():
     frame5.destroy()
     global frame6
     frame6 = customtkinter.CTkFrame(master=root)
     frame6.pack(pady=20, padx=60, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame6, text="Scanning...", font=("Roboto", 36), text_color="#329983")
-    label.pack(pady=20, padx=20)
+    label = customtkinter.CTkLabel(master=frame6, text="Choose Scan method...", font=("Roboto", 36))
+    label.pack(pady=(60, 35), padx=10)
 
-    radio = customtkinter.CTkRadioButton(frame6, text="Drone ... 141.68.44.205")
-    radio.pack(pady=(6, 3), padx=50, anchor="w")
-    radio2 = customtkinter.CTkRadioButton(frame6, text="Drone ... 141.68.44.205")
-    radio2.pack(pady=(6, 3), padx=50, anchor="w")
-    radio3 = customtkinter.CTkRadioButton(frame6, text="Drone ... 141.68.44.205")
-    radio3.pack(pady=(6, 3), padx=50, anchor="w")
-    radio4 = customtkinter.CTkRadioButton(frame6, text="Drone ... 141.68.44.205")
-    radio4.pack(pady=(6, 3), padx=50, anchor="w")
+    button1 = customtkinter.CTkButton(master=frame6, text="Full Scan", command=FullScan)
+    button1.pack(pady=12, padx=10)
 
+    button2 = customtkinter.CTkButton(master=frame6, text="Custom Scan", command=test_1)
+    button2.pack(pady=12, padx=10)
 
-    button3 = customtkinter.CTkButton(master=frame6, text="Select Drone", command=Test)
-    button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
+    button3 = customtkinter.CTkButton(master=frame6, text="Back", command=lambda: [des5(), WifiScan()], fg_color="transparent")
+    button3.pack(pady=12, padx=10)
 
-    button4 = customtkinter.CTkButton(master=frame6, text="Back", command=lambda: [des6(), Scan_Page()])
-    button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
-
-def Test():
+def FullScan():
     frame6.destroy()
     global frame7
     frame7 = customtkinter.CTkFrame(master=root)
     frame7.pack(pady=20, padx=60, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame7, text="Choose Test method...", font=("Roboto", 36))
-    label.pack(pady=(60, 35), padx=10)
+    label = customtkinter.CTkLabel(master=frame7, text="Scanning...", font=("Roboto", 36), text_color="#329983")
+    label.pack(pady=20, padx=20)
 
-    button1 = customtkinter.CTkButton(master=frame7, text="Full Test", command=test_1)
-    button1.pack(pady=12, padx=10)
+    radio = customtkinter.CTkRadioButton(frame7, text="Drone ... 141.68.44.205")
+    radio.pack(pady=(6, 3), padx=50, anchor="w")
+    radio2 = customtkinter.CTkRadioButton(frame7, text="Drone ... 141.68.44.205")
+    radio2.pack(pady=(6, 3), padx=50, anchor="w")
+    radio3 = customtkinter.CTkRadioButton(frame7, text="Drone ... 141.68.44.205")
+    radio3.pack(pady=(6, 3), padx=50, anchor="w")
+    radio4 = customtkinter.CTkRadioButton(frame7, text="Drone ... 141.68.44.205")
+    radio4.pack(pady=(6, 3), padx=50, anchor="w")
 
-    button2 = customtkinter.CTkButton(master=frame7, text="Custom Test", command=CustomTest)
-    button2.pack(pady=12, padx=10)
 
-    button3 = customtkinter.CTkButton(master=frame7, text="Back", command=lambda: [des7(), FullScan()],fg_color="transparent")
-    button3.pack(pady=12, padx=10)
+    button3 = customtkinter.CTkButton(master=frame7, text="Select Drone", command=Test)
+    button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
 
-def CustomTest():
+    button4 = customtkinter.CTkButton(master=frame7, text="Back", command=lambda: [des7(), Scan_Page()])
+    button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
+
+def Test():
     frame7.destroy()
     global frame8
     frame8 = customtkinter.CTkFrame(master=root)
     frame8.pack(pady=20, padx=60, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame8, text="Choose Test Method", font=("Roboto", 36), text_color="#329983")
+    label = customtkinter.CTkLabel(master=frame8, text="Choose Test method...", font=("Roboto", 36))
+    label.pack(pady=(60, 35), padx=10)
+
+    button1 = customtkinter.CTkButton(master=frame8, text="Full Test", command=test_1)
+    button1.pack(pady=12, padx=10)
+
+    button2 = customtkinter.CTkButton(master=frame8, text="Custom Test", command=CustomTest)
+    button2.pack(pady=12, padx=10)
+
+    button3 = customtkinter.CTkButton(master=frame8, text="Back", command=lambda: [des7(), FullScan()],fg_color="transparent")
+    button3.pack(pady=12, padx=10)
+
+def CustomTest():
+    frame8.destroy()
+    global frame9
+    frame9 = customtkinter.CTkFrame(master=root)
+    frame9.pack(pady=20, padx=60, fill="both", expand=True)
+
+    label = customtkinter.CTkLabel(master=frame9, text="Choose Test Method", font=("Roboto", 36), text_color="#329983")
     label.pack(pady=20, padx=20)
 
-    radio = customtkinter.CTkRadioButton(frame8, text="Test 1")
+    radio = customtkinter.CTkRadioButton(frame9, text="Test 1")
     radio.pack(pady=(6, 3), padx=50, anchor="w")
-    radio2 = customtkinter.CTkRadioButton(frame8, text="Test 2")
+    radio2 = customtkinter.CTkRadioButton(frame9, text="Test 2")
     radio2.pack(pady=(6, 3), padx=50, anchor="w")
-    radio3 = customtkinter.CTkRadioButton(frame8, text="Test 3")
+    radio3 = customtkinter.CTkRadioButton(frame9, text="Test 3")
     radio3.pack(pady=(6, 3), padx=50, anchor="w")
-    radio4 = customtkinter.CTkRadioButton(frame8, text="Test 4")
+    radio4 = customtkinter.CTkRadioButton(frame9, text="Test 4")
     radio4.pack(pady=(6, 3), padx=50, anchor="w")
 
-    button3 = customtkinter.CTkButton(master=frame8, text="Select Drone", command=test_1)
+    button3 = customtkinter.CTkButton(master=frame9, text="Select Drone", command=test_1)
     button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
 
-    button4 = customtkinter.CTkButton(master=frame8, text="Back", command=lambda: [des8(), Test()])
+    button4 = customtkinter.CTkButton(master=frame9, text="Back", command=lambda: [des8(), Test()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 Login()
