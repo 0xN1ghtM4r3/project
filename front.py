@@ -44,9 +44,10 @@ def des8():
 def des9():
     frame9.destroy()
 
-#--------------------------------------------------------------------------
+#------------------------------------------------------------
+#------------------------------------------------------------
 def hash_password(password):
-        return hashlib.sha256(password.encode()).hexdigest()
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def load_users():
         try:
@@ -61,58 +62,7 @@ def load_users():
 def save_users(users):
         with open("users.json", "w") as file:
             json.dump(users, file)
-
-def networks_list():
-        nertworks = scan()
-        return nertworks
-def scan():
-        try:
-            output = subprocess.check_output(f"iwlist {selected_interface} scan", shell=True).decode()
-        except subprocess.CalledProcessError as e:
-            print("Error:", e)
-            return
-        networks = parse_scan_output(output)
-        return networks
-def parse_scan_output(output):
-        networks = []
-        current_network = {}
         
-        for line in output.split("\n"):
-            if "Cell" in line:
-                if current_network:
-                    networks.append(current_network)
-                current_network = {"ESSID": None, "Channel": None, "Frequency": None, "Quality": None}
-            elif "ESSID:" in line:
-                current_network["ESSID"] = line.split(":")[1].strip().strip('"')
-            elif "Channel:" in line:
-                current_network["Channel"] = line.split(":")[1]
-            elif "Frequency:" in line:
-                frequency_match = re.search(r"(\d+\.\d+) GHz", line)
-                if frequency_match:
-                    current_network["Frequency"] = frequency_match.group(1)
-            elif "Quality=" in line:
-                match = re.search(r"(\d+/\d+)", line)
-                if match:
-                    current_network["Quality"] = match.group(1)
-        
-        if current_network:
-            networks.append(current_network)
-        
-        return [network["ESSID"] for network in networks if network["ESSID"]]
-def connect_to_wifi(wifi_name, password):
-    command = f'nmcli device wifi connect "{wifi_name}" password "{password}"'
-    try:
-        subprocess.run(command, shell=True, check=True)
-        print(f"Connected to {wifi_name} successfully.")
-    except subprocess.CalledProcessError:
-        print(f"Failed to connect to {wifi_name}.")
-#------------------------------------------------------------
-#------------------------------------------------------------
-#------------------------------------------------------------
-#------------------------------------------------------------
-#------------------------------------------------------------
-#------------------------------------------------------------
-#------------------------------------------------------------
 def Login():
     global frame
     frame = customtkinter.CTkFrame(master=root)
@@ -238,6 +188,7 @@ def Homepage():
 # ********************************************************************************************
 # ********************************************************************************************
 # ********************************************************************************************
+
 def interface_page():
     frame3.destroy()
     global frame4
@@ -278,6 +229,51 @@ def interface_page():
 # ********************************************************************************************
 # ********************************************************************************************
 # ********************************************************************************************
+def networks_list():
+        nertworks = scan()
+        return nertworks
+def scan():
+        try:
+            output = subprocess.check_output(f"iwlist {selected_interface} scan", shell=True).decode()
+        except subprocess.CalledProcessError as e:
+            print("Error:", e)
+            return
+        networks = parse_scan_output(output)
+        return networks
+def parse_scan_output(output):
+        networks = []
+        current_network = {}
+        
+        for line in output.split("\n"):
+            if "Cell" in line:
+                if current_network:
+                    networks.append(current_network)
+                current_network = {"ESSID": None, "Channel": None, "Frequency": None, "Quality": None}
+            elif "ESSID:" in line:
+                current_network["ESSID"] = line.split(":")[1].strip().strip('"')
+            elif "Channel:" in line:
+                current_network["Channel"] = line.split(":")[1]
+            elif "Frequency:" in line:
+                frequency_match = re.search(r"(\d+\.\d+) GHz", line)
+                if frequency_match:
+                    current_network["Frequency"] = frequency_match.group(1)
+            elif "Quality=" in line:
+                match = re.search(r"(\d+/\d+)", line)
+                if match:
+                    current_network["Quality"] = match.group(1)
+        
+        if current_network:
+            networks.append(current_network)
+        
+        return [network["ESSID"] for network in networks if network["ESSID"]]
+def connect_to_wifi(wifi_name, password):
+    command = f'nmcli device wifi connect "{wifi_name}" password "{password}"'
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f"Connected to {wifi_name} successfully.")
+    except subprocess.CalledProcessError:
+        print(f"Failed to connect to {wifi_name}.")
+
 def WifiScan():
     frame4.destroy()
     global frame5
@@ -307,7 +303,19 @@ def WifiScan():
 
     button4 = customtkinter.CTkButton(master=frame5, text="Back", command=lambda: [des5(), interface_page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
-
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+    
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
+# ********************************************************************************************
 def Scan_Page():
     frame5.destroy()
     global frame6
