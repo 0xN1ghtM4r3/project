@@ -15,6 +15,11 @@ def get_network_interfaces():
     interfaces = psutil.net_if_addrs()
     return list(interfaces.keys())
     
+def select_interface():
+    global selected_interface
+    selected_interface = interface_combobox.get()
+    print("Selected Interface:", selected_interface)
+
 # Create the main application window
 root.title("Select Network Interface")
 
@@ -29,9 +34,9 @@ label.pack(pady=10)
 interface_combobox = customtkinter.CTkComboBox(root, values=interfaces, state="readonly")
 interface_combobox.pack()
 
+# Create a button to select the interface
+select_button = customtkinter.CTkButton(root, text="Select Interface", command=select_interface)
+select_button.pack(pady=10)
 
 # Run the application
 root.mainloop()
-
-# Now you can use the selected_interface variable wherever needed in your code
-
