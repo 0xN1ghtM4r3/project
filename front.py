@@ -521,7 +521,7 @@ def FullScan():
     button3 = customtkinter.CTkButton(master=frame9, text="Select Drone", command=save_ip_address)
     button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
 
-    button4 = customtkinter.CTkButton(master=frame9, text="Back", command=lambda: [des9(), scan_page()])
+    button4 = customtkinter.CTkButton(master=frame9, text="Back", command=lambda: [des9(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 
