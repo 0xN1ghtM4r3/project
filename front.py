@@ -157,6 +157,7 @@ def Sign_up():
         hashed_password = hash_password(password)
         users[username] = {"password": hashed_password}
         save_users(users)
+        CTkMessagebox(title="Success", message="User created successfully.", icon="check")
         print("User created successfully.")
 
     label = customtkinter.CTkLabel(master=frame1, text="Sign up", font=("Roboto", 24))
@@ -460,7 +461,7 @@ def manufacturer_page():
 
 
   # Create the label
-    label = customtkinter.CTkLabel(master=root, text="Select a manufacturer:")
+    label = customtkinter.CTkLabel(master=frame7, text="Select a manufacturer:")
     label.pack(padx=10, pady=10)
 
   # Create the combobox widget
