@@ -62,7 +62,7 @@ def des9():
 def des10():
     frame10.destroy()
 def des11():
-    frame10.destroy()
+    frame11.destroy()
 
 # def des11():
 #     frame11.destroy()
@@ -260,7 +260,7 @@ def interface_page():
         WifiScan()
 
     # Create the main application window
-    root.title("Select Network Interface")
+    '''root.title("Select Network Interface")'''
 
     # Get available network interfaces
     interfaces = get_network_interfaces()
@@ -393,7 +393,9 @@ def DroneSelectPage():
     frame6.pack(pady=20, padx=60, fill="both", expand=True)
 
     def scan_network():
-        cidr = "192.168.1.0/24"
+        cidr = "192.168.87.0/24"
+        #cidr = "10.0.0.0/22"
+        #cidr = "192.168.1.0/24"
         live_hosts = []
         network = ipaddress.ip_network(cidr)
 
@@ -428,11 +430,11 @@ def DroneSelectPage():
             selected_device_label.configure(text="Selected device: " + drone_ip)
             time.sleep(1)
             manufacturer_page()
-        
+            #selected_manufacturer()
     checkboxes = []
 
-    frame = customtkinter.CTkFrame(master=frame6)
-    frame.pack(padx=10, pady=10)
+    '''frame = customtkinter.CTkFrame(master=frame6)
+    frame.pack(padx=10, pady=10)'''
 
     live_devices_label = customtkinter.CTkLabel(master=frame6, text="Available devices:")
     live_devices_label.pack(padx=10, pady=5)
@@ -458,6 +460,7 @@ def manufacturer_page():
         global selected_manufacturer  # Declare variable as global to access outside the function
         selected_manufacturer = combobox.get()
         print("You selected:", selected_manufacturer)
+        Scan_Page()
 
 
   # Create the label
@@ -466,11 +469,11 @@ def manufacturer_page():
 
   # Create the combobox widget
     manufacturers = ["DJI", "Parrot", "Yuneec"]
-    combobox = customtkinter.CTkComboBox(master=root, values=manufacturers)
+    combobox = customtkinter.CTkComboBox(master=frame7, values=manufacturers)
     combobox.pack(padx=10, pady=10)
 
   # Create the button
-    button = customtkinter.CTkButton(master=root, text="Choose", command=choose_manufacturer )
+    button = customtkinter.CTkButton(master=frame7, text="Choose", command=choose_manufacturer )
     button.pack(padx=10, pady=10)
 
   # Declare `selected_manufacturer` globally (optional, but recommended for clarity)
@@ -487,13 +490,13 @@ def Scan_Page():
     label = customtkinter.CTkLabel(master=frame8, text="Choose Scan method...", font=("Roboto", 36))
     label.pack(pady=(60, 35), padx=10)
 
-    button1 = customtkinter.CTkButton(master=frame8, text="Full Scan", command=FullScan)
+    button1 = customtkinter.CTkButton(master=frame8, text="Full Test", command=FullScan)
     button1.pack(pady=12, padx=10)
 
-    button2 = customtkinter.CTkButton(master=frame8, text="Custom Scan", command=test_1)
+    button2 = customtkinter.CTkButton(master=frame8, text="Custom Test", command=CustomTest)
     button2.pack(pady=12, padx=10)
 
-    button3 = customtkinter.CTkButton(master=frame6, text="Back", command=lambda: [des8(), manufacturer_page()],
+    button3 = customtkinter.CTkButton(master=frame8, text="Back", command=lambda: [des8(), manufacturer_page()],
                                       fg_color="transparent")
     button3.pack(pady=12, padx=10)
 
@@ -504,9 +507,9 @@ def FullScan():
     frame9 = customtkinter.CTkFrame(master=root)
     frame9.pack(pady=20, padx=60, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame9, text="Scanning...", font=("Roboto", 36), text_color="#329983")
+    label = customtkinter.CTkLabel(master=frame9, text="Testing...", font=("Roboto", 36), text_color="#329983")
     label.pack(pady=20, padx=20)
-
+    '''
     radio_value = tkinter.StringVar()  #variable to store the selected IP address
 
     radio = customtkinter.CTkRadioButton(frame9, text="141.68.44.205", variable=radio_value, value="141.68.44.205")
@@ -522,13 +525,15 @@ def FullScan():
     button3 = customtkinter.CTkButton(master=frame9, text="Select Drone", command=save_ip_address)
     button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
 
+    '''
     button4 = customtkinter.CTkButton(master=frame9, text="Back", command=lambda: [des9(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 
 
 def Test():
-    frame9.destroy()
+    '''not this'''
+    frame8.destroy()
     global frame10
     frame10 = customtkinter.CTkFrame(master=root)
     frame10.pack(pady=20, padx=60, fill="both", expand=True)
@@ -539,7 +544,7 @@ def Test():
     button1 = customtkinter.CTkButton(master=frame10, text="Full Test", command=test_1)
     button1.pack(pady=12, padx=10)
 
-    button2 = customtkinter.CTkButton(master=frame10, text="Custom Test", command=CustomTest)
+    button2 = customtkinter.CTkButton(master=frame10, text="Custom Test", command=CustomTest())
     button2.pack(pady=12, padx=10)
 
     button3 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), FullScan()],
@@ -548,7 +553,7 @@ def Test():
 
 
 def CustomTest():
-    frame10.destroy()
+    frame8.destroy()
     global frame11
     frame11 = customtkinter.CTkFrame(master=root)
     frame11.pack(pady=20, padx=60, fill="both", expand=True)
@@ -565,10 +570,10 @@ def CustomTest():
     radio4 = customtkinter.CTkRadioButton(frame11, text="Test 4")
     radio4.pack(pady=(6, 3), padx=50, anchor="w")
 
-    button3 = customtkinter.CTkButton(master=frame11, text="Select Drone", command=test_1)
+    button3 = customtkinter.CTkButton(master=frame11, text="Start Test", command=test_1)
     button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
 
-    button4 = customtkinter.CTkButton(master=frame11, text="Back", command=lambda: [des11(), Test()])
+    button4 = customtkinter.CTkButton(master=frame11, text="Back", command=lambda: [des11(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 
