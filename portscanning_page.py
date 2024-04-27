@@ -32,7 +32,7 @@ def scan_ports(target_host):
 
     result_text.delete("1.0", customtkinter.END)
     result_text.insert(customtkinter.END, f"Scanning host: {target_host}\n")
-    with ThreadPoolExecutor(max_workers=50) as executor:
+    with ThreadPoolExecutor(max_workers=100) as executor:
         futures = [executor.submit(scan_port, port) for port in range(1, 1001)]  # Scan common ports
         for future in futures:
             future.result()  # Wait for all tasks to complete
