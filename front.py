@@ -393,9 +393,9 @@ def DroneSelectPage():
     frame6.pack(pady=20, padx=60, fill="both", expand=True)
 
     def scan_network():
-        cidr = "192.168.87.0/24"
+        #cidr = "192.168.87.0/24"
         #cidr = "10.0.0.0/22"
-        #cidr = "192.168.1.0/24"
+        cidr = "192.168.1.0/24"
         live_hosts = []
         network = ipaddress.ip_network(cidr)
 
