@@ -666,31 +666,31 @@ def DroneControllerPage():
         
         # Create buttons for each command
     button_up = customtkinter.CTkButton( master=frame13, text="Up", command=lambda: send_command("up"))
-    #button_up.grid(row=1, column=250, padx=5, pady=5)
+    button_up.grid(row=1, column=250, padx=5, pady=5)
         
     button_down = customtkinter.CTkButton(  master=frame13, text="Down", command=lambda: send_command("down"))
-    #button_down.grid(row=2, column=250, padx=5, pady=5)
+    button_down.grid(row=2, column=250, padx=5, pady=5)
         
     button_right = customtkinter.CTkButton(master=frame13, text="Right", command=lambda: send_command("right"))
-    #button_right.grid(row=2, column=270, padx=5, pady=5)
+    button_right.grid(row=2, column=270, padx=5, pady=5)
         
     button_left = customtkinter.CTkButton(master=frame13, text="Left", command=lambda: send_command("left"))
-    #button_left.grid(row=2, column=230, padx=5, pady=5)
+    button_left.grid(row=2, column=230, padx=5, pady=5)
         
     button_takeoff = customtkinter.CTkButton(master=frame13, text="Takeoff", command=lambda: send_command("takeoff"))
-    #button_takeoff.grid(row=3, column=230, padx=5, pady=5)
+    button_takeoff.grid(row=3, column=230, padx=5, pady=5)
         
     button_land = customtkinter.CTkButton(master=frame13, text="Land", command=lambda: send_command("land"))
-    #button_land.grid(row=3, column=270, padx=5, pady=5)
+    button_land.grid(row=3, column=270, padx=5, pady=5)
         
     button_camera = customtkinter.CTkButton(master=frame13, text="Turn On Camera", command=lambda:send_command("turnoncamera"))
-    #button_camera.grid(row=3, column=250, padx=5, pady=5)
+    button_camera.grid(row=3, column=250, padx=5, pady=5)
         
         #Log text area
     global log_text
-    log_text.pack(padx=10, pady=5)
     log_text = customtkinter.CTkTextbox(master=frame13, height=200, width=400)
-    #log_text.grid(row=4, column=1900, columnspan=4, padx=0, pady=0)
+    log_text.grid(row=4, column=1900, columnspan=4, padx=0, pady=0)
+        
 
 
 
