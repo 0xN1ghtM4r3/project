@@ -21,6 +21,8 @@ def send_payload(command, seq_num):
             payload = "AT*REF={},290741696\r"
         elif command == "land":
             payload = "AT*REF={},290751696\r"
+        elif command == "turnoncamera":
+            payload = "AT*REF={},2907510942\r"
         else:
             print("Invalid command. Please enter 'up', 'down', 'right', 'left', 'takeoff', or 'land'.")
             return
@@ -44,14 +46,14 @@ def send_payload(command, seq_num):
 
 # Main function to send payloads
 def main():
+    seq_num = 0
+    packet_count = 0  # Counter for sent packets
     while True:
         # Prompt the user to input the command name
-        command = input("Enter command name (up/down/right/left/takeoff/land): ").lower()
+        command = input("Enter command name (up/down/right/left/takeoff/land/turnOnCamera): ").lower()
         
         # Check if the command is valid
         if command in ["up", "down", "right", "left", "takeoff", "land"]:
-            seq_num = 0
-            packet_count = 0  # Counter for sent packets
             while packet_count < 5:
                 send_payload(command, seq_num)
                 time.sleep(1)  # Wait for 1 second before sending the next payload
@@ -60,8 +62,11 @@ def main():
             
             # Reset packet count
             packet_count = 0
+        elif command == "turnoncamera":
+            send_payload(command, 0)
+            time.sleep(1)
         else:
-            print("Invalid command. Please enter 'up', 'down', 'right', 'left', 'takeoff', or 'land'.")
+            print("Invalid command. Please enter 'up', 'down', 'right', 'left', 'takeoff', 'land', or 'turnOnCamera'.")
 
 if __name__ == "__main__":
     main()

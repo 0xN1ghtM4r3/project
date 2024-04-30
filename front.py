@@ -8,6 +8,7 @@ import subprocess
 import ipaddress
 import time
 import json
+import socket
 from scapy.all import *
 from tkinter import ttk
 
@@ -67,9 +68,9 @@ def des11():
 # def des11():
 #     frame11.destroy()
 #
-# def des12():
-#     frame12.destroy()
-#
+def des12():
+    frame12.destroy()
+
 # def des13():
 #     frame13.destroy()
 
@@ -433,9 +434,6 @@ def DroneSelectPage():
             #selected_manufacturer()
     checkboxes = []
 
-    '''frame = customtkinter.CTkFrame(master=frame6)
-    frame.pack(padx=10, pady=10)'''
-
     live_devices_label = customtkinter.CTkLabel(master=frame6, text="Available devices:")
     live_devices_label.pack(padx=10, pady=5)
 
@@ -487,10 +485,10 @@ def Scan_Page():
     frame8 = customtkinter.CTkFrame(master=root)
     frame8.pack(pady=20, padx=60, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame8, text="Choose Scan method...", font=("Roboto", 36))
+    label = customtkinter.CTkLabel(master=frame8, text="Choose Test method...", font=("Roboto", 36))
     label.pack(pady=(60, 35), padx=10)
 
-    button1 = customtkinter.CTkButton(master=frame8, text="Full Test", command=FullScan)
+    button1 = customtkinter.CTkButton(master=frame8, text="Full Test", command=FullTest)
     button1.pack(pady=12, padx=10)
 
     button2 = customtkinter.CTkButton(master=frame8, text="Custom Test", command=CustomTest)
@@ -501,7 +499,7 @@ def Scan_Page():
     button3.pack(pady=12, padx=10)
 
 
-def FullScan():
+def FullTest():
     frame8.destroy()
     global frame9
     frame9 = customtkinter.CTkFrame(master=root)
@@ -509,48 +507,12 @@ def FullScan():
 
     label = customtkinter.CTkLabel(master=frame9, text="Testing...", font=("Roboto", 36), text_color="#329983")
     label.pack(pady=20, padx=20)
-    '''
-    radio_value = tkinter.StringVar()  #variable to store the selected IP address
-
-    radio = customtkinter.CTkRadioButton(frame9, text="141.68.44.205", variable=radio_value, value="141.68.44.205")
-    radio.pack(pady=(6, 3), padx=50, anchor="w")
-    radio2 = customtkinter.CTkRadioButton(frame9, text="192.168.1.1", variable=radio_value, value="192.168.1.1")
-    radio2.pack(pady=(6, 3), padx=50, anchor="w")
-
-    def save_ip_address():
-        global ipAddress
-        ipAddress = radio_value.get()
-        print("Selected IP address:", ipAddress)
-
-    button3 = customtkinter.CTkButton(master=frame9, text="Select Drone", command=save_ip_address)
-    button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
-
-    '''
+    
+    button = customtkinter.CTkButton(master=frame9, text="Port Scanning", command=ports)
+    button.pack(pady=18, padx=40)
+   
     button4 = customtkinter.CTkButton(master=frame9, text="Back", command=lambda: [des9(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
-
-
-
-def Test():
-    '''not this'''
-    frame8.destroy()
-    global frame10
-    frame10 = customtkinter.CTkFrame(master=root)
-    frame10.pack(pady=20, padx=60, fill="both", expand=True)
-
-    label = customtkinter.CTkLabel(master=frame10, text="Choose Test method...", font=("Roboto", 36))
-    label.pack(pady=(60, 35), padx=10)
-
-    button1 = customtkinter.CTkButton(master=frame10, text="Full Test", command=test_1)
-    button1.pack(pady=12, padx=10)
-
-    button2 = customtkinter.CTkButton(master=frame10, text="Custom Test", command=CustomTest())
-    button2.pack(pady=12, padx=10)
-
-    button3 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), FullScan()],
-                                      fg_color="transparent")
-    button3.pack(pady=12, padx=10)
-
 
 def CustomTest():
     frame8.destroy()
@@ -575,6 +537,64 @@ def CustomTest():
 
     button4 = customtkinter.CTkButton(master=frame11, text="Back", command=lambda: [des11(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
+
+#****************************************************************************************
+#****************************************************************************************
+#**************************************ports*******************************************
+#****************************************************************************************
+def scan_ports(target_host, result_text):
+    open_ports = []
+
+    def scan_port(port):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(1)  # Adjust timeout as needed
+                result = s.connect_ex((target_host, port))
+                if result == 0:
+                    service = socket.getservbyport(port)
+                    open_ports.append((port, service))
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_version:
+                            s_version.settimeout(1)  # Adjust timeout as needed
+                            s_version.connect((target_host, port))
+                            s_version.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                            banner = s_version.recv(1024).decode("utf-8")
+                            print(f"Version: {banner.strip()}")
+                    except socket.error:
+                        pass
+        except socket.error:
+            pass
+    
+    result_text.delete("1.0", customtkinter.END)
+    result_text.insert(customtkinter.END, f"Scanning host: {target_host}\n")
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        futures = [executor.submit(scan_port, port) for port in range(1, 1001)]  # Scan common ports
+        for future in futures:
+            future.result()  # Wait for all tasks to complete
+    result_text.insert(customtkinter.END, "Open ports:\n")
+    for port, service in open_ports:
+        result_text.insert(customtkinter.END, f"Port: {port}, Service: {service}\n")
+
+def scan_button_clicked():
+    target_host = drone_ip
+    if not target_host:
+        customtkinter.showwarning("Warning", "Please enter a target host.")
+        return
+    scan_ports(target_host, result_text)
+    
+def ports():
+    frame9.destroy()
+    global frame12
+    frame12 = customtkinter.CTkFrame(master=root)
+    frame12.pack(pady=20, padx=60, fill="both", expand=True)
+    
+    scan_button = customtkinter.CTkButton(frame12, text="Scan Ports", command=scan_button_clicked)
+    scan_button.pack(padx=10, pady=20)
+
+    global result_text
+    result_text = customtkinter.CTkTextbox(frame12, width=200, height=200)
+    result_text.pack(padx=10, pady=5)
+    
 
 
 #****************************************************************************************
@@ -612,3 +632,12 @@ Login()
 root.mainloop()
 print("Final selected drone IP:", drone_ip)
 print(selected_interface)
+
+'''
+TODO:
+    - [ ] Drone Controller
+    - [ ] Port Hacking
+    - [ ] Arp Spoofing
+    - [ ] video intercepting
+    - [ ] History
+'''
