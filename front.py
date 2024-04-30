@@ -605,8 +605,6 @@ def ports():
 def send_payload(command, seq_num):
         ip_address = drone_ip  # Replace "your_ip_address" with the actual IP address
         port = 5556  # Adjust the port number according to your setup
-        seq_num = 0
-        
         try:
             if command == "up":
                 payload = "AT*REF={},290717696\r"
@@ -636,6 +634,7 @@ def send_payload(command, seq_num):
             log("Error: " + str(e))
         
 def send_command(command):
+        seq_num = 0
         packet_count = 0
         if command in ["up", "down", "right", "left", "takeoff", "land"]:
             while packet_count < 5:
@@ -665,25 +664,25 @@ def DroneControllerPage():
   
         
         # Create buttons for each command
-    button_up = customtkinter.CTkButton( master=frame13, text="Up", command=lambda: send_command("up"))
+    button_up = customtkinter.CTkButton( master=frame13, text="Up ⬆️", command=lambda: send_command("up"))
     button_up.grid(row=1, column=250, padx=5, pady=5)
         
-    button_down = customtkinter.CTkButton(  master=frame13, text="Down", command=lambda: send_command("down"))
+    button_down = customtkinter.CTkButton(  master=frame13, text="Down ⬇️", command=lambda: send_command("down"))
     button_down.grid(row=2, column=250, padx=5, pady=5)
         
-    button_right = customtkinter.CTkButton(master=frame13, text="Right", command=lambda: send_command("right"))
+    button_right = customtkinter.CTkButton(master=frame13, text="Right ➡️", command=lambda: send_command("right"))
     button_right.grid(row=2, column=270, padx=5, pady=5)
         
-    button_left = customtkinter.CTkButton(master=frame13, text="Left", command=lambda: send_command("left"))
+    button_left = customtkinter.CTkButton(master=frame13, text="Left ⬅️", command=lambda: send_command("left"))
     button_left.grid(row=2, column=230, padx=5, pady=5)
         
-    button_takeoff = customtkinter.CTkButton(master=frame13, text="Takeoff", command=lambda: send_command("takeoff"))
+    button_takeoff = customtkinter.CTkButton(master=frame13, text="Takeoff 🚀", command=lambda: send_command("takeoff"))
     button_takeoff.grid(row=3, column=230, padx=5, pady=5)
         
-    button_land = customtkinter.CTkButton(master=frame13, text="Land", command=lambda: send_command("land"))
+    button_land = customtkinter.CTkButton(master=frame13, text="Land 🛬", command=lambda: send_command("land"))
     button_land.grid(row=3, column=270, padx=5, pady=5)
         
-    button_camera = customtkinter.CTkButton(master=frame13, text="Turn On Camera", command=lambda:send_command("turnoncamera"))
+    button_camera = customtkinter.CTkButton(master=frame13, text="Turn On Camera 📷", command=lambda:send_command("turnoncamera"))
     button_camera.grid(row=3, column=250, padx=5, pady=5)
         
         #Log text area
