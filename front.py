@@ -730,10 +730,8 @@ print("Final selected drone IP:", drone_ip)
 print(selected_interface)
 
 '''
-TODO:
-    - [ ] Drone Controller
-    - [ ] Port Hacking
-    - [ ] Arp Spoofing
-    - [ ] video intercepting
-    - [ ] History
+TODO:   
+    - [ ] Port Hacking 22,21
+    - [ ] Arp Spoofing - 
+    - [ ] History -
 '''
