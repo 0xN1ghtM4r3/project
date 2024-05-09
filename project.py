@@ -844,8 +844,6 @@ def DroneControllerPage():
     global log_text
     log_text = customtkinter.CTkTextbox(master=frame13, height=200, width=400)
     log_text.grid(row=4, column=250,  padx=20, pady=20)
-        
-
 
 
 #****************************************************************************************
@@ -883,6 +881,7 @@ Login()
 root.mainloop()
 print("Final selected drone IP:", drone_ip)
 print(selected_interface)
+
 
 '''
 TODO:   
