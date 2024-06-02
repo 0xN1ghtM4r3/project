@@ -1,6 +1,7 @@
 import customtkinter
 from CTkMessagebox import CTkMessagebox
 import tkinter
+from tkinter import messagebox
 import psutil
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +13,7 @@ import socket
 from ftplib import FTP
 from scapy.all import *
 from tkinter import ttk
+from fpdf import FPDF
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
@@ -395,7 +397,7 @@ def DroneSelectPage():
     frame6.pack(pady=20, padx=60, fill="both", expand=True)
 
     def scan_network():
-        #cidr = "192.168.215.0/24"
+        #cidr = "192.168.87.0/24"
         #cidr = "10.0.0.0/22"
         cidr = "192.168.1.0/24"
         live_hosts = []
@@ -650,14 +652,12 @@ def download_all_files():
 
 found_password = ""
 
-def start_brute_force(username_entry,password_file_entry):
+def start_brute_force():
     global found_password
+    
+    target_ip = drone_ip
     username = username_entry.get()
     password_file = password_file_entry.get()
-    target_ip = drone_ip
-    print("Target IP:", target_ip)
-    print("Username:", username)
-    print("Password File:", password_file)
     command = f"hydra -l {username} -P {password_file} {target_ip} ssh"
     
     try:
@@ -675,13 +675,13 @@ def start_brute_force(username_entry,password_file_entry):
     except FileNotFoundError:
         CTkMessagebox(title="Error", message="Hydra not found. Make sure Hydra is installed.")
 
-def open_ssh_connection(username_entry):
-    target_ip = drone_ip
+def open_ssh_connection():
+    target_ip = ip_entry.get()
     username = username_entry.get()
     global found_password
     password = found_password
     if password:
-        command = f"uxterm -e ssh {username}@{target_ip}"
+        command = f"x-terminal-emulator -e ssh {username}@{target_ip}"
         subprocess.run(command, shell=True)
     else:
         CTkMessagebox(title="Error", message="No password found. Please run brute force first.")
@@ -737,12 +737,11 @@ def FTP_SSH():
     password_file_label.grid(row=2, column=0, padx=30, pady=(10,30))
     password_file_entry = customtkinter.CTkEntry(frame15)
     password_file_entry.grid(row=2, column=1, padx=10, pady=(10,30))
-    
 
-    start_button = customtkinter.CTkButton(frame15, text="Start Brute Force", command=lambda: start_brute_force(username_entry, password_file_entry))
+    start_button = customtkinter.CTkButton(frame15, text="Start Brute Force", command=start_brute_force)
     start_button.grid(row=3, column=1, columnspan=5, padx=10, pady=(30,20))
 
-    open_connection_button = customtkinter.CTkButton(frame15, text="Open SSH Connection", command=lambda: open_ssh_connection(username_entry))
+    open_connection_button = customtkinter.CTkButton(frame15, text="Open SSH Connection", command=open_ssh_connection)
     open_connection_button.grid(row=4, column=1, columnspan=2, padx=10, pady=5)
     
     
@@ -826,7 +825,7 @@ def DroneControllerPage():
     button_down.grid(row=5, column=250, padx=3, pady=(2,10))
         
     button_right = customtkinter.CTkButton(master=frame13, text="Right ➡️", command=lambda: send_command("right"))
-    button_right.grid(row=4, column=270, padx=(2,10), pady=3)
+    button_right.grid(row=4, column=270, padx=(2,20), pady=3)
         
     button_left = customtkinter.CTkButton(master=frame13, text="Left ⬅️", command=lambda: send_command("left"))
     button_left.grid(row=4, column=230, padx=(10,2), pady=3)
@@ -835,15 +834,96 @@ def DroneControllerPage():
     button_takeoff.grid(row= 7, column=230, padx=5, pady=(20,3))
         
     button_land = customtkinter.CTkButton(master=frame13, text="Land 🛬", command=lambda: send_command("land"))
-    button_land.grid(row=7, column=270, padx=5, pady=(20,3))
+    button_land.grid(row=7, column=270, padx=(5,20), pady=(20,3))
         
     button_camera = customtkinter.CTkButton(master=frame13, text="Turn On Camera 📷", command=lambda:send_command("turnoncamera"))
     button_camera.grid(row=7, column=250, padx=5, pady=(20,3))
+    
+    NXTbutton = customtkinter.CTkButton(master=frame13, text="Next", command=REP_GEN)
+    NXTbutton.grid(row=8, column=270, padx=(5,20), pady=(30,0))
         
         #Log text area
     global log_text
     log_text = customtkinter.CTkTextbox(master=frame13, height=200, width=400)
     log_text.grid(row=4, column=250,  padx=20, pady=20)
+        
+#****************************************************************************************
+#****************************************************************************************
+#**************************************REPORT*******************************************
+#****************************************************************************************
+def generate_report():
+        # Create PDF
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+
+        # Title
+        pdf.set_font("Arial", style='B', size=20)
+        pdf.cell(200, 10, txt="Security Check Report", ln=True, align="C")
+        pdf.ln(15)
+
+        # System Information
+        system_info = {
+            "Username": "n1ght",
+            "Drone Manufacture": "DJI",
+            "Drone IP": "192.168.1.6",
+            "Network Interface": "wlan0",
+            "Open Ports": "SSH (22), FTP (21), AAFTP (3000)",
+            "Kernel Version": "6.8.9-arch1-1 #1 SMP PREEMPT_DYNAMIC Thu, 02 May 2024 17:49:46 +0000 x86_64 GNU/Linux"
+        }
+
+        # Subtitle for System Information
+        pdf.set_font("Arial", style='B', size=16)
+        pdf.cell(200, 10, txt="System Information", ln=True)
+        pdf.ln(10)
+
+        # Add system information to PDF
+        for param, value in system_info.items():
+            pdf.set_font("Arial", size=14)
+            pdf.cell(200, 10, txt=f"{param}: {value}", ln=True)
+
+        # Security Issues
+        security_issues = {
+            "SSH Brute Force": "SSH brute force is a method of attempting to gain unauthorized access to a system by trying many passwords until the correct one is found.\nMitigation: Use strong, unique passwords, implement SSH key-based authentication, and use tools like fail2ban to block repeated failed login attempts.",
+            "FTP NullSession": "FTP null session is a type of security vulnerability where an attacker can access an FTP server without authentication.\nMitigation: Disable anonymous FTP access, restrict access to authorized users only, and use secure FTP protocols such as SFTP or FTPS.",
+            "Command Injection": "Command injection is an attack in which the goal is execution of arbitrary commands on the host operating system via a vulnerable application.\nMitigation: Validate and sanitize user input, use parameterized queries in databases, and employ web application firewalls (WAFs) to detect and block command injection attacks.",
+            "Drone Instruction Injection": "Drone instruction injection is a type of attack where an attacker injects malicious instructions into the commands sent to a drone, potentially gaining unauthorized control.\nMitigation: Encrypt communications between the controller and the drone, implement secure authentication mechanisms, and regularly update drone firmware to patch known vulnerabilities.",
+            "ARP Spoof": "ARP spoofing is a technique whereby an attacker sends fake Address Resolution Protocol (ARP) messages onto a local area network in order to link the attacker’s MAC address with the IP address of a legitimate member of the network.\nMitigation: Use ARP spoofing detection tools, implement static ARP entries, and use secure protocols like ARPSEC to prevent ARP spoofing attacks.",
+            "DoS on Drone Operator": "Denial-of-Service (DoS) attacks on drone operators involve flooding the operator's communication channels with traffic, rendering them unable to control the drone effectively.\nMitigation: Use encrypted communication channels, implement DoS protection mechanisms such as rate limiting and traffic filtering, and employ intrusion detection systems to detect and respond to DoS attacks."
+        }
+
+        # Header for Security Issues
+        pdf.set_font("Arial", style='B', size=16)
+        pdf.cell(200, 10, txt="Security Issues", ln=True)
+        pdf.ln(10)
+
+        # Add security issues to PDF
+        for param, value in security_issues.items():
+            pdf.set_font("Arial", style='B', size=14)
+            pdf.cell(200, 10, txt=f"{param}:", ln=True)
+            pdf.set_text_color(255, 0, 0)  # Red color for security issues
+            pdf.multi_cell(0, 10, txt=value.encode('latin-1', 'replace').decode('latin-1'), align='L')
+            pdf.set_text_color(0, 0, 0)  # Reset text color
+            pdf.ln(10)
+
+        # Save PDF
+        pdf_filename = "security_check_report.pdf"
+        pdf.output(pdf_filename)
+
+        # Show success message
+        CTkMessagebox(title="Success", message=f"PDF report generated successfully: {pdf_filename}",
+                  icon="check")
+
+
+def REP_GEN():
+    frame13.destroy()
+    global frame16
+    frame16 = customtkinter.CTkFrame(master=root)
+    frame16.pack(pady=20, padx=60, fill="both", expand=True)
+    
+        # Generate Report Button
+    generate_button = customtkinter.CTkButton(frame16, text="Generate Report", command=generate_report)
+    generate_button.place(relx=0.5, rely=0.5, anchor="center")
 
 
 #****************************************************************************************
@@ -881,7 +961,6 @@ Login()
 root.mainloop()
 print("Final selected drone IP:", drone_ip)
 print(selected_interface)
-
 
 '''
 TODO:   
