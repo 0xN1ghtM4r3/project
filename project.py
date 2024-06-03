@@ -1,6 +1,8 @@
 import customtkinter
+import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 import tkinter
+import tkinter as tk
 from tkinter import messagebox
 import psutil
 import hashlib
@@ -13,7 +15,13 @@ import socket
 from ftplib import FTP
 from scapy.all import *
 from tkinter import ttk
+from tkinter import filedialog
 from fpdf import FPDF
+import os
+import webbrowser
+import datetime
+
+current_time = datetime.datetime.now()
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
@@ -27,7 +35,7 @@ global frame1
 drone_ip = None
 selected_interface = None
 selected_manufacturer = None 
-sshbruteforce=False
+
 
 def test_1():
     print("testing")
@@ -106,6 +114,7 @@ def Login():
     frame.pack(pady=20, padx=60, fill="both", expand=True)
 
     def user_login():
+        global username
         users = load_users()
         username = username_entry.get()
         password = password_entry.get()
@@ -747,7 +756,6 @@ def FTP_SSH():
     
 
 
-
 #****************************************************************************************
 #****************************************************************************************
 #****************************************************************************************
@@ -859,16 +867,16 @@ def generate_report():
 
         # Title
         pdf.set_font("Arial", style='B', size=20)
-        pdf.cell(200, 10, txt="Security Check Report", ln=True, align="C")
+        pdf.cell(200, 10, txt=f"Security Check Report", ln=True, align="C")
         pdf.ln(15)
 
         # System Information
         system_info = {
-            "Username": "n1ght",
-            "Drone Manufacture": "DJI",
-            "Drone IP": "192.168.1.6",
-            "Network Interface": "wlan0",
-            "Open Ports": "SSH (22), FTP (21), AAFTP (3000)",
+            "Username": username,
+            "Drone Manufacture": selected_manufacturer,
+            "Drone IP": drone_ip,
+            "Network Interface": selected_interface,
+            "Open Ports": result_text,
             "Kernel Version": "6.8.9-arch1-1 #1 SMP PREEMPT_DYNAMIC Thu, 02 May 2024 17:49:46 +0000 x86_64 GNU/Linux"
         }
 
@@ -906,8 +914,12 @@ def generate_report():
             pdf.set_text_color(0, 0, 0)  # Reset text color
             pdf.ln(10)
 
+
+        if not os.path.exists('reports'):
+           os.makedirs('reports')
+        
         # Save PDF
-        pdf_filename = "security_check_report.pdf"
+        pdf_filename = os.path.join('reports', f"{username} {current_time}.pdf")
         pdf.output(pdf_filename)
 
         # Show success message
@@ -931,31 +943,63 @@ def REP_GEN():
 #**************************************History*******************************************
 #****************************************************************************************
 
+directory = os.getcwd()
+pdf_directory = os.path.join(directory, 'reports')
+if not os.path.exists(pdf_directory):
+    os.makedirs(pdf_directory)
+
+def update_pdf_grid():
+    global frame10, empty
+    global back
+    empty = True
+    back = 1
+    for widget in frame10.winfo_children():
+        widget.destroy()
+    row = 1
+    col = 0
+    for filename in os.listdir(pdf_directory):
+        if filename.lower().endswith(".pdf"):
+            empty=False
+            pdf_button = ctk.CTkButton(frame10, text=filename, command=lambda f=filename: view_pdf(f))
+            pdf_button.grid(row=row, column=col, padx=10, pady=10, sticky="w")
+            row += 1
+            
+    '''        
+    if ( row == 1 ):
+       empty = True
+    else:
+       empty = False
+    back = row+1'''
+
+def view_pdf(pdf_filename):
+    pdf_path = os.path.join(pdf_directory , pdf_filename)
+    webbrowser.open_new(pdf_path)
+
+
 def History():
     frame3.destroy()
-    global frame10
+    global frame10, empty
     frame10 = customtkinter.CTkFrame(master=root)
     frame10.pack(pady=20, padx=60, fill="both", expand=True)
+    
+    update_pdf_grid()
 
-    label = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 36), text_color="#329983")
-    label.pack(pady=50, padx=20)
+    if (empty == True):
+        label = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 25))
+        label.grid(row=1, pady=20, padx=320, sticky="n")
+        
+        label2 = customtkinter.CTkLabel(master=frame10, text="No Reports Found", font=("Roboto", 36), text_color="#329983")
+        label2.grid(row=2, pady=120, padx=20)
 
-    Reports = []        #"Report 1", "Report 2"
-    if not Reports:
-        label.configure(text="No Reports Found")
-        label.pack(pady=150, padx=20)
+        button1 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), Homepage()])
+        button1.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
     else:
-        radio_value = tkinter.StringVar()  # variable to store the selected IP address
+       label3 = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 35))
+       label3.grid(row=0, column= 2, pady=20, padx=20)
+       
+       button2 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), Homepage()])
+       button2.grid(column= 2, pady=20, padx=20, sticky='s')
 
-        for ip in Reports:
-            radio = customtkinter.CTkRadioButton(frame10, text=ip, variable=radio_value, value=ip)
-            radio.pack(pady=(6, 3), padx=50, anchor="w")
-
-        button = customtkinter.CTkButton(master=frame10, text="Select Drone", command=test_1())
-        button.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
-
-    button1 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), Homepage()])
-    button1.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 Login()
 root.mainloop()
@@ -964,7 +1008,6 @@ print(selected_interface)
 
 '''
 TODO:   
-    - [ ] Port Hacking 22,21
+    - [ ] Dos -
     - [ ] Arp Spoofing - 
-    - [ ] History -
 '''
