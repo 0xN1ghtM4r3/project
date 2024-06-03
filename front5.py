@@ -19,6 +19,9 @@ from tkinter import filedialog
 from fpdf import FPDF
 import os
 import webbrowser
+import datetime
+
+current_time = datetime.datetime.now()
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
@@ -111,6 +114,7 @@ def Login():
     frame.pack(pady=20, padx=60, fill="both", expand=True)
 
     def user_login():
+        global username
         users = load_users()
         username = username_entry.get()
         password = password_entry.get()
@@ -864,7 +868,7 @@ def generate_report():
 
         # Title
         pdf.set_font("Arial", style='B', size=20)
-        pdf.cell(200, 10, txt="Security Check Report", ln=True, align="C")
+        pdf.cell(200, 10, txt=f"Security Check Report", ln=True, align="C")
         pdf.ln(15)
 
         # System Information
@@ -911,8 +915,12 @@ def generate_report():
             pdf.set_text_color(0, 0, 0)  # Reset text color
             pdf.ln(10)
 
+
+        if not os.path.exists('reports'):
+           os.makedirs('reports')
+        
         # Save PDF
-        pdf_filename = "security_check_report.pdf"
+        pdf_filename = os.path.join('reports', f"{username} {current_time}.pdf")
         pdf.output(pdf_filename)
 
         # Show success message
@@ -936,9 +944,11 @@ def REP_GEN():
 #**************************************History*******************************************
 #****************************************************************************************
 
-pdf_directory = ""
-pdf_directory = os.getcwd()
-empty = False
+directory = os.getcwd()
+pdf_directory = os.path.join(directory, 'reports')
+if not os.path.exists(pdf_directory):
+    os.makedirs(pdf_directory)
+empty = True
 def update_pdf_grid():
     global frame10
     global back
@@ -952,9 +962,12 @@ def update_pdf_grid():
             pdf_button = ctk.CTkButton(frame10, text=filename, command=lambda f=filename: view_pdf(f))
             pdf_button.grid(row=row, column=col, padx=10, pady=10, sticky="w")
             row += 1
+            empty=False
             
     if ( row == 1 ):
        empty = True
+    else:
+       empty = False
     back = row+1
 
 def view_pdf(pdf_filename):
@@ -970,12 +983,12 @@ def History():
     
     update_pdf_grid()
 
-    if empty:
-        label = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 20))
-        label.grid(row=0, column=0, pady=20, padx=20)
+    if (empty == True):
+        label = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 25))
+        label.grid(row=1, pady=20, padx=320, sticky="n")
         
         label2 = customtkinter.CTkLabel(master=frame10, text="No Reports Found", font=("Roboto", 36), text_color="#329983")
-        label2.grid(row=1, column=0, pady=120, padx=20)
+        label2.grid(row=2, pady=120, padx=20)
 
         '''button = customtkinter.CTkButton(master=frame10, text="Select Drone", command=test_1())
         button.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)'''
@@ -983,11 +996,15 @@ def History():
         button1 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), Homepage()])
         button1.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
     else:
-       label3 = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 20))
-       label3.grid(row=0, column= 2, pady=20, padx=0)
+       label.destroy()
+       label2.destroy()
+       button1.destroy()
+       label3 = customtkinter.CTkLabel(master=frame10, text="History", font=("Roboto", 35))
+       label3.grid(row=0, column= 2, pady=20, padx=20)
        
        button2 = customtkinter.CTkButton(master=frame10, text="Back", command=lambda: [des10(), Homepage()])
-       button2.grid(row= back, column= 2, pady=10, padx=0)
+       button2.grid(column= 2, pady=20, padx=20, sticky='s')
+
 
 Login()
 root.mainloop()
