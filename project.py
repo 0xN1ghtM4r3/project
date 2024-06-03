@@ -27,7 +27,7 @@ global frame1
 drone_ip = None
 selected_interface = None
 selected_manufacturer = None 
-
+sshbruteforce=False
 
 def test_1():
     print("testing")
@@ -652,12 +652,12 @@ def download_all_files():
 
 found_password = ""
 
-def start_brute_force():
+def start_brute_force(username,password_file):
     global found_password
     
     target_ip = drone_ip
-    username = username_entry.get()
-    password_file = password_file_entry.get()
+    username = username
+    password_file = password_file
     command = f"hydra -l {username} -P {password_file} {target_ip} ssh"
     
     try:
@@ -675,9 +675,9 @@ def start_brute_force():
     except FileNotFoundError:
         CTkMessagebox(title="Error", message="Hydra not found. Make sure Hydra is installed.")
 
-def open_ssh_connection():
-    target_ip = ip_entry.get()
-    username = username_entry.get()
+def open_ssh_connection(username):
+    target_ip = drone_ip
+    username = username
     global found_password
     password = found_password
     if password:
@@ -738,10 +738,10 @@ def FTP_SSH():
     password_file_entry = customtkinter.CTkEntry(frame15)
     password_file_entry.grid(row=2, column=1, padx=10, pady=(10,30))
 
-    start_button = customtkinter.CTkButton(frame15, text="Start Brute Force", command=start_brute_force)
+    start_button = customtkinter.CTkButton(frame15, text="Start Brute Force", command=lambda:start_brute_force(username_entry.get(),password_file_entry.get()) )
     start_button.grid(row=3, column=1, columnspan=5, padx=10, pady=(30,20))
 
-    open_connection_button = customtkinter.CTkButton(frame15, text="Open SSH Connection", command=open_ssh_connection)
+    open_connection_button = customtkinter.CTkButton(frame15, text="Open SSH Connection", command=lambda: open_ssh_connection(username_entry.get()))
     open_connection_button.grid(row=4, column=1, columnspan=2, padx=10, pady=5)
     
     
