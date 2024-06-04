@@ -85,6 +85,12 @@ def des12():
 
 def des13():
     frame13.destroy()
+    
+def des18():
+    frame18.destroy()
+    
+def des19():
+    frame19.destroy()
 
 
 # ------------------------------------------------------------
@@ -536,7 +542,7 @@ def AutoTest():
     label = customtkinter.CTkLabel(master=frame11, text="Automated Test", font=("Roboto", 36), text_color="#329983")
     label.pack(pady=20, padx=20)
 
-    button3 = customtkinter.CTkButton(master=frame11, text="Start Test", command=test_1)
+    button3 = customtkinter.CTkButton(master=frame11, text="Start Test", command=autoInputs)
     button3.pack(pady=(90,5), anchor="c")
 
     button4 = customtkinter.CTkButton(master=frame11, text="Back", command=lambda: [des11(), Scan_Page()])
@@ -931,16 +937,48 @@ def arp():
     start_dos_button = customtkinter.CTkButton(frame18, text="Start DoS Attack on Operator", command=start_dos_attack)
     start_dos_button.pack(padx=170 , pady=(5,10))
     
-    NXTbutton = customtkinter.CTkButton(master=frame18, text="Next", command=REP_GEN)
+    NXTbutton = customtkinter.CTkButton(master=frame18, text="Next", command=lambda: [REP_GEN(), des18()])
     NXTbutton.pack(padx=150 , pady=(150,10))
 
+#****************************************************************************************
+#****************************************************************************************
+#**************************************AutoIN********************************************
+#****************************************************************************************
 
-        
+def autoInputs():
+    frame11.destroy()
+    global frame19
+    frame19 = customtkinter.CTkFrame(master=root)
+    frame19.pack(pady=20, padx=60, fill="both", expand=True)
+    
+    SSHuser_label = customtkinter.CTkLabel(frame19, text="SSH Username")
+    SSHuser_label.pack(padx=(0,60) , pady=5, anchor="c")
+    
+    SSHuser_entry = customtkinter.CTkEntry(frame19)
+    SSHuser_entry.pack(padx=5 , pady=5)
+    
+    SSHpass_label = customtkinter.CTkLabel(frame19, text="SSH Password")
+    SSHpass_label.pack(padx=(0,60) , pady=5, anchor="c")
+    
+    SSHpass_entry = customtkinter.CTkEntry(frame19)
+    SSHpass_entry.pack(padx=5 , pady=5)
+    
+    operator_label = customtkinter.CTkLabel(frame19, text="Operator IP  ")
+    operator_label.pack(padx=(0,60) , pady=5, anchor="c")
+    
+    operator_entry = customtkinter.CTkEntry(frame19)
+    operator_entry.pack(padx=5 , pady=5)
+    
+    NXTbutton = customtkinter.CTkButton(master=frame19, text="Next", command= lambda: [REP_GEN(), des19()])
+    NXTbutton.pack(padx=5, pady=30)
+
 #****************************************************************************************
 #****************************************************************************************
-#**************************************REPORT*******************************************
+#**************************************REPORT********************************************
 #****************************************************************************************
 def generate_report():
+        global result_text
+        
         # Create PDF
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -950,7 +988,7 @@ def generate_report():
         pdf.set_font("Arial", style='B', size=20)
         pdf.cell(200, 10, txt=f"Security Check Report", ln=True, align="C")
         pdf.ln(15)
-
+        
         # System Information
         system_info = {
             "Username": username,
@@ -1009,7 +1047,6 @@ def generate_report():
 
 
 def REP_GEN():
-    frame18.destroy()
     global frame16
     frame16 = customtkinter.CTkFrame(master=root)
     frame16.pack(pady=20, padx=60, fill="both", expand=True)
@@ -1044,14 +1081,7 @@ def update_pdf_grid():
             pdf_button = ctk.CTkButton(frame10, text=filename, command=lambda f=filename: view_pdf(f))
             pdf_button.grid(row=row, column=col, padx=10, pady=10, sticky="w")
             row += 1
-            
-    '''        
-    if ( row == 1 ):
-       empty = True
-    else:
-       empty = False
-    back = row+1'''
-
+   
 def view_pdf(pdf_filename):
     pdf_path = os.path.join(pdf_directory , pdf_filename)
     webbrowser.open_new(pdf_path)
