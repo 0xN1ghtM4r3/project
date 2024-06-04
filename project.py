@@ -501,10 +501,10 @@ def Scan_Page():
     label = customtkinter.CTkLabel(master=frame8, text="Choose Test method...", font=("Roboto", 36))
     label.pack(pady=(60, 35), padx=10)
 
-    button1 = customtkinter.CTkButton(master=frame8, text="Full Test", command=FullTest)
+    button1 = customtkinter.CTkButton(master=frame8, text="Manual Test", command=ManTest)
     button1.pack(pady=12, padx=10)
 
-    button2 = customtkinter.CTkButton(master=frame8, text="Custom Test", command=CustomTest)
+    button2 = customtkinter.CTkButton(master=frame8, text="Automated Test", command=AutoTest)
     button2.pack(pady=12, padx=10)
 
     button3 = customtkinter.CTkButton(master=frame8, text="Back", command=lambda: [des8(), manufacturer_page()],
@@ -512,7 +512,7 @@ def Scan_Page():
     button3.pack(pady=12, padx=10)
 
 
-def FullTest():
+def ManTest():
     frame8.destroy()
     global frame9
     frame9 = customtkinter.CTkFrame(master=root)
@@ -527,33 +527,24 @@ def FullTest():
     button4 = customtkinter.CTkButton(master=frame9, text="Back", command=lambda: [des9(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
-def CustomTest():
+def AutoTest():
     frame8.destroy()
     global frame11
     frame11 = customtkinter.CTkFrame(master=root)
     frame11.pack(pady=20, padx=60, fill="both", expand=True)
 
-    label = customtkinter.CTkLabel(master=frame11, text="Choose Test Method", font=("Roboto", 36), text_color="#329983")
+    label = customtkinter.CTkLabel(master=frame11, text="Automated Test", font=("Roboto", 36), text_color="#329983")
     label.pack(pady=20, padx=20)
 
-    radio = customtkinter.CTkRadioButton(frame11, text="Test 1")
-    radio.pack(pady=(6, 3), padx=50, anchor="w")
-    radio2 = customtkinter.CTkRadioButton(frame11, text="Test 2")
-    radio2.pack(pady=(6, 3), padx=50, anchor="w")
-    radio3 = customtkinter.CTkRadioButton(frame11, text="Test 3")
-    radio3.pack(pady=(6, 3), padx=50, anchor="w")
-    radio4 = customtkinter.CTkRadioButton(frame11, text="Test 4")
-    radio4.pack(pady=(6, 3), padx=50, anchor="w")
-
     button3 = customtkinter.CTkButton(master=frame11, text="Start Test", command=test_1)
-    button3.pack(pady=(0, 18), padx=(0, 40), anchor="se", expand=True)
+    button3.pack(pady=(90,5), anchor="c")
 
     button4 = customtkinter.CTkButton(master=frame11, text="Back", command=lambda: [des11(), Scan_Page()])
     button4.place(relx=0.15, rely=0.93, anchor=tkinter.CENTER)
 
 #****************************************************************************************
 #****************************************************************************************
-#**************************************ports*******************************************
+#**************************************ports*********************************************
 #****************************************************************************************
 def scan_ports(target_host, result_text):
     open_ports = []
@@ -1097,7 +1088,16 @@ print("Final selected drone IP:", drone_ip)
 print(selected_interface)
 
 '''
-TODO:   
-    - [ ] Dos -
-    - [ ] Arp Spoofing - 
+-port scanning
+	button clicks
+-FTP
+	button clicks
+-SSH
+	username + password + button clicks + terminal page(command injection)
+-drone controller
+	button clicks
+-camera page
+	button clicks
+-ARP + DOS
+	operator ip + button clicks
 '''
