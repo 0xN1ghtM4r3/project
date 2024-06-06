@@ -874,8 +874,8 @@ ipv4_regex = r"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01
 def validate_ip(ip):
     return bool(re.match(ipv4_regex, ip))
 
-def start_arp_spoof():
-    operator_ip = operator_entry.get()
+def start_arp_spoof(op_ip):
+    operator_ip = op_ip
 
     if not validate_ip(operator_ip):
         CTkMessagebox(title="Alert", message="Invalid IP address. Please enter a valid IPv4 address for the operator.",
@@ -900,8 +900,8 @@ def stop_arp_spoof():
         arp_spoof_process2.terminate()
     CTkMessagebox(title="Success", message="ARP Spoofing has been stopped.", icon="check")
 
-def start_dos_attack():
-    operator_ip = operator_entry.get()
+def start_dos_attack(op_ip):
+    operator_ip = op_ip
 
     if not validate_ip(operator_ip):
         CTkMessagebox(title="Alert", message="Invalid IP address. Please enter a valid IPv4 address for the operator.",
@@ -969,8 +969,33 @@ def autoInputs():
     operator_entry = customtkinter.CTkEntry(frame19)
     operator_entry.pack(padx=5 , pady=5)
     
+    attack = customtkinter.CTkButton(master=frame19, text="Start The Test", command=execute_auto_test)
+    attack.pack(padx=5, pady=30)
+
     NXTbutton = customtkinter.CTkButton(master=frame19, text="Next", command= lambda: [REP_GEN(), des19()])
-    NXTbutton.pack(padx=5, pady=30)
+    NXTbutton.pack(padx=10, pady=50)
+
+    def execute_auto_test():
+        global result_text
+        global drone_ip
+        print("Executing automated test...")
+        print("Drone IP:", drone_ip)
+        # port scanning
+        scan_ports(drone_ip, result_text)
+        print("Port scanning completed.")
+        print("result_text:", result_text)
+        # FTP enumeration
+        connect_and_list_files()
+
+        # SSH enumeration
+        start_brute_force(SSHuser_entry.get(), SSHpass_entry.get())
+        open_ssh_connection(SSHuser_entry.get())
+
+        # ARP spoofing and DoS attack
+        start_arp_spoof(operator_entry.get())
+        start_dos_attack(operator_entry.get())
+
+        
 
 #****************************************************************************************
 #****************************************************************************************
