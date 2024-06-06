@@ -944,7 +944,6 @@ def arp():
 #****************************************************************************************
 #**************************************AutoIN********************************************
 #****************************************************************************************
-
 def autoInputs():
     frame11.destroy()
     global frame19
@@ -975,25 +974,25 @@ def autoInputs():
     NXTbutton = customtkinter.CTkButton(master=frame19, text="Next", command= lambda: [REP_GEN(), des19()])
     NXTbutton.pack(padx=10, pady=50)
 
-    def execute_auto_test():
-        global result_text
-        global drone_ip
-        print("Executing automated test...")
-        print("Drone IP:", drone_ip)
+def execute_auto_test():
+    global result_text
+    global drone_ip
+    print("Executing automated test...")
+    print("Drone IP:", drone_ip)
         # port scanning
-        scan_ports(drone_ip, result_text)
-        print("Port scanning completed.")
-        print("result_text:", result_text)
+    scan_ports(drone_ip, result_text)
+    print("Port scanning completed.")
+    print("result_text:", result_text)
         # FTP enumeration
-        connect_and_list_files()
+    connect_and_list_files()
 
         # SSH enumeration
-        start_brute_force(SSHuser_entry.get(), SSHpass_entry.get())
-        open_ssh_connection(SSHuser_entry.get())
+    start_brute_force(SSHuser_entry.get(), SSHpass_entry.get())
+    open_ssh_connection(SSHuser_entry.get())
 
         # ARP spoofing and DoS attack
-        start_arp_spoof(operator_entry.get())
-        start_dos_attack(operator_entry.get())
+    start_arp_spoof(operator_entry.get())
+    start_dos_attack(operator_entry.get())
 
         
 
