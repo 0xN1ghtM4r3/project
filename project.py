@@ -119,7 +119,8 @@ def des18():
 
 def des19():
     frame19.destroy()
-
+def des20():
+    frame20.destroy()
 
 # ------------------------------------------------------------
 # ------------------------------------------------------------
@@ -1035,6 +1036,38 @@ def scanports_automated(target_host):
 
     return open_ports
 
+def DroneControllerPageAuto():
+    global frame20
+    frame20 = customtkinter.CTkFrame(master=root)
+    frame20.pack(pady=20, padx=60, fill="both", expand=True)
+
+    # Create buttons for each command
+    button_up = customtkinter.CTkButton(master=frame20, text="Up ⬆️", command=lambda: send_command("up"))
+    button_up.grid(row=1, column=250, padx=3, pady=(10, 2))
+
+    button_down = customtkinter.CTkButton(master=frame20, text="Down ⬇️", command=lambda: send_command("down"))
+    button_down.grid(row=5, column=250, padx=3, pady=(2, 10))
+
+    button_right = customtkinter.CTkButton(master=frame20, text="Right ➡️", command=lambda: send_command("right"))
+    button_right.grid(row=4, column=270, padx=(2, 20), pady=3)
+
+    button_left = customtkinter.CTkButton(master=frame20, text="Left ⬅️", command=lambda: send_command("left"))
+    button_left.grid(row=4, column=230, padx=(10, 2), pady=3)
+
+    button_takeoff = customtkinter.CTkButton(master=frame20, text="Takeoff 🚀", command=lambda: send_command("takeoff"))
+    button_takeoff.grid(row=7, column=230, padx=5, pady=(20, 3))
+
+    button_land = customtkinter.CTkButton(master=frame20, text="Land 🛬", command=lambda: send_command("land"))
+    button_land.grid(row=7, column=270, padx=(5, 20), pady=(20, 3))
+
+    NXTbutton = customtkinter.CTkButton(master=frame20, text="Back", command=lambda:[des20(),autoInputs()])
+    NXTbutton.grid(row=7, column=250, padx=5, pady=(20, 3))
+
+    # Log text area
+    global log_text
+    log_text = customtkinter.CTkTextbox(master=frame20, height=200, width=400)
+    log_text.grid(row=4, column=250, padx=20, pady=20)
+
 
 def execute_auto_test(ssh_user, ssh_passwordlist, operator_ip):
     global result_text
@@ -1085,10 +1118,15 @@ def autoInputs():
     attack = customtkinter.CTkButton(master=frame19, text="Start The Test",
                                      command=lambda: execute_auto_test(SSHuser_entry.get(), SSHpass_entry.get(),
                                                                        operator_entry.get()))
-    attack.pack(padx=5, pady=30)
+    attack.pack(padx=10, pady=10)
 
+    
+    Instruction_page = customtkinter.CTkButton(master=frame19, text="Drone Controller", command=lambda: [DroneControllerPageAuto(), des19()])
+    Instruction_page.pack(padx=10, pady=10)
+    videoIntercepting = customtkinter.CTkButton(master=frame19, text="Intercept Video Footage", command=lambda: send_command("turnoncamera"))
+    videoIntercepting.pack(padx=10, pady=10)
     NXTbutton = customtkinter.CTkButton(master=frame19, text="Next", command=lambda: [REP_GEN(), des19()])
-    NXTbutton.pack(padx=10, pady=50)
+    NXTbutton.pack(padx=10, pady=10)
 
 
 # ****************************************************************************************
@@ -1223,9 +1261,11 @@ def REP_GEN():
     # Generate Report Button
 
     generate_button = customtkinter.CTkButton(frame16, text="Generate Report 📝 ", command=generate_report)
-    generate_button.pack(padx=5, pady=30)
+    generate_button.pack(padx=10, pady=30)
     scanPageBack = customtkinter.CTkButton(master=frame16, text="New Test", command=lambda: [des16(), Scan_Page()])
-    scanPageBack.pack(padx=10, pady=50)
+    scanPageBack.pack(padx=10, pady=30)
+    gotohistory = customtkinter.CTkButton(master=frame16, text="Go To History", command=lambda: [des16(), History()])
+    gotohistory.pack(padx=10, pady=30)
 
 
     button4 = customtkinter.CTkButton(master=frame16, text="Back", command=lambda: [des16(), autoInputs()])
